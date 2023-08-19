@@ -1,7 +1,5 @@
-import Browser from 'webextension-polyfill';
+import Browser from "webextension-polyfill";
 
-Browser
-  .devtools
-  .panels
-  .create('Dev Tools', 'icon-34.png', 'src/pages/panel/index.html')
+Browser.devtools.panels
+  .create("Dev Tools", "icon.png", "src/pages/panel/index.html")
   .catch(console.error);
