@@ -18,7 +18,7 @@ let efitterBot;
 const App = () => {
   const [open, setOpen] = useState(false);
   const { data: instructions, error, isLoading } = useQuery({
-    queryKey: ['getInstructions'],
+    queryKey: ['getInstructions', window.location.hostname],
     queryFn: async () => {
       const response = await fetch("https://efitter-serverless.vercel.app/api", {
         method: "POST",
@@ -36,14 +36,20 @@ const App = () => {
   }, [instructions]);
 
   const setupEfitterBot = useCallback(async (current_size: string, material: string, chat: ChatFlow) => {
+    let attemptsRemaining = 10;
     try {
       efitterBot = new Bot(current_size, material, chat);
       await forSeconds(1);
       console.log('$$$ just checking', efitterBot);
       efitterBot.init();
+      setOpen(true);
     } catch (ex) {
       console.log(ex + '!!!!');
-      setTimeout(() => setupEfitterBot(current_size, material, chat), 500);
+      if (attemptsRemaining > 0) {
+        attemptsRemaining--;
+        setTimeout(() => setupEfitterBot(current_size, material, chat), 500);
+      }
+
     }
   }, []);
 

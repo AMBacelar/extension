@@ -5,25 +5,58 @@ import mango from "@assets/img/mango.png";
 import zara from "@assets/img/zara.png";
 import asos from "@assets/img/asos.png";
 import houseOfCb from "@assets/img/house_of_cb.png";
+import { OAUTH } from "../../../utils/oauth";
+import { storageGet } from "../../../utils/misc";
+import { config } from "../../../utils/config";
 
 const screens = ['signIn', 'firstTimeUser', 'loadingEmails', 'startShopping', 'returningUser'] as const;
 type Screen = typeof screens[number];
 export default function Popup(): JSX.Element {
-  const [screen, setScreen] = useState<Screen>('signIn');
+  const [screen, setScreen] = useState<Screen>();
   const [isFirstTimeUser, setIsFirstTimeUser] = useState<boolean>(true);
-  console.log('yolo')
+
+  useEffect(() => {
+    storageGet(OAUTH.user.info)
+      .then((user) => {
+        if (user) {
+          storageGet(config.keys.products)
+            .then((products) => {
+              if (products && products.length > 0) {
+                setIsFirstTimeUser(false);
+                setScreen('returningUser');
+              } else {
+                setScreen('firstTimeUser');
+              }
+            })
+        } else {
+          setScreen('signIn');
+        }
+      })
+      .catch(() => {
+        setScreen('signIn');
+      })
+
+  }, [])
+
+
   const handleLogin = async () => {
-    // check whether there are emails
-    // if there are no emails, show the first time user screen
-    setScreen('firstTimeUser')
+    await OAUTH.user.signIn();
+    if (isFirstTimeUser) {
+      setScreen('firstTimeUser');
+    } else {
+      setScreen('returningUser');
+    }
   }
 
-  const handleLogout = () => {
-    setScreen('signIn')
+  const handleLogout = async () => {
+    await OAUTH.user.logOut();
+    setScreen('signIn');
   }
 
-  const handleLoadEmails = () => {
-    setScreen('loadingEmails')
+  const handleLoadEmails = async () => {
+    const messages = await OAUTH.request.getMessages();
+    console.log(messages);
+    setScreen('loadingEmails');
   }
 
   const SignIn = () => (
