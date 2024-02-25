@@ -33,6 +33,9 @@ export const config = {
     contentPayload: 'contentPayload',
 
     lastSavedVersion: 'lastSavedVersion',
+
+    styleGuruArchetype: 'styleGuruArchetype',
+    fetchPersona: 'fetchPersona',
   },
 
   validAsosBrands: [

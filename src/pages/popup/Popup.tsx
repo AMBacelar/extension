@@ -18,9 +18,11 @@ export default function Popup(): JSX.Element {
   useEffect(() => {
     storageGet(OAUTH.user.info)
       .then((user) => {
+        console.log(user)
         if (user) {
           storageGet(config.keys.products)
             .then((products) => {
+              console.log(products)
               if (products && products.length > 0) {
                 setIsFirstTimeUser(false);
                 setScreen('returningUser');

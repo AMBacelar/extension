@@ -46,6 +46,7 @@ export const OAUTH = {
   request: {
     refreshUserInfo: () => {
       return new Promise((resolve) => {
+        console.log(chrome);
         chrome.identity
           .getAuthToken({
             interactive: true,

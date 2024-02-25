@@ -32,7 +32,7 @@ const styleGuruArchetypes = {
     capsuleUrl: 'https://mailchi.mp/02444f40da77/xn06nty4jb-9376562',
   },
   'free-spirit': {
-    label: 'Free-Spirit',
+    label: 'Free Spirit',
     description:
       'Your style is an effortless blend of comfort and individuality, with flowy silhouettes, earthy tones, and pieces that move with you through the changing seasons.',
     gifUrl:
@@ -301,6 +301,7 @@ export class Bot {
     try {
       const newPersonaKey = await this.fetchStyleGuru(email);
       this.persona_key = newPersonaKey;
+      console.log('yolo', this.persona_key);
     } catch {
       /* empty */
     } finally {
