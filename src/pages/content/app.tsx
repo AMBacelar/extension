@@ -1,9 +1,8 @@
 /* eslint-disable react/no-unescaped-entities */
-import { useCallback, useEffect, useState, Fragment } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import { useCallback, useEffect, useState } from "react";
 import { useQuery, QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { Bot } from "../../../utils/bot";
-import { ChatFlow, happyFlow, noProductsFoundFlow, sizeUnavailableFlow } from "../../../utils/chat-flows";
+import { Bot, PersonaKey } from "../../../utils/bot";
+import { LegalSize } from "utils/size";
 
 const forSeconds = (seconds: number) => {
   return new Promise<void>((resolve) => {
@@ -31,14 +30,19 @@ const App = () => {
 
   useEffect(() => {
     if (instructions) {
-      handlePageParse('XS', 'sample material string', [{ date: '2024-01-01' }]);
+      handlePageParse('XS', 'sample material string', [{ date: '2024-01-01' }], 'ambacelar@gmail.com');
     }
   }, [instructions]);
 
-  const setupEfitterBot = useCallback(async (current_size: string, material: string, chat: ChatFlow) => {
+  const setupEfitterBot = useCallback(async (current_size: LegalSize, material: string, products_length: number, user_email: string,) => {
     let attemptsRemaining = 10;
     try {
-      efitterBot = new Bot(current_size, material, chat);
+      efitterBot = new Bot(
+        current_size,
+        material,
+        products_length,
+        user_email
+      );
       await forSeconds(1);
       console.log('$$$ just checking', efitterBot);
       efitterBot.init();
@@ -47,24 +51,23 @@ const App = () => {
       console.log(ex + '!!!!');
       if (attemptsRemaining > 0) {
         attemptsRemaining--;
-        setTimeout(() => setupEfitterBot(current_size, material, chat), 500);
+        setTimeout(() => setupEfitterBot(
+          current_size,
+          material,
+          products_length,
+          user_email
+        ), 500);
       }
 
     }
   }, []);
 
-  const handlePageParse = useCallback(async (current_size: string, material: string, efitter_products: any[]) => {
+  const handlePageParse = useCallback(async (current_size: LegalSize, material: string, efitter_products: any[], efitter_email: string) => {
     const today = new Date();
     const products = efitter_products.filter(
       (x: { date: string | number | Date; }) => Math.abs(today.getTime() - new Date(x.date).getTime()) / (1000 * 3600 * 24) / 30 <= 12
     );
-    if (products.length === 0) {
-      setupEfitterBot(current_size, material, noProductsFoundFlow);
-    } else if (!current_size) {
-      setupEfitterBot(current_size, material, sizeUnavailableFlow);
-    } else {
-      setupEfitterBot(current_size, material, happyFlow);
-    }
+    setupEfitterBot(current_size, material, products.length, efitter_email);
   }, []);
 
   if (!instructions || instructions.brand === '') {
