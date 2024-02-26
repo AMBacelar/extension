@@ -53,16 +53,16 @@ export function elementAppear(
   });
 }
 
-class ExtensionMessage {
+export class ExtensionMessage {
   context: any;
   data: any;
-  constructor(context, data) {
+  constructor(context: string, data?: any) {
     this.context = context;
     this.data = data;
   }
 }
 
-const requestBackground = (request: ExtensionMessage) => {
+export const requestBackground = (request: ExtensionMessage) => {
   return new Promise((resolve) => {
     const handler = ({ context, data }) => {
       if (context === request.context) {

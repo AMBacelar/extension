@@ -1,7 +1,6 @@
 import { config } from './config';
 import { parseJwt, storageGet, storageSet } from './misc';
 
-let nextPageToken: string;
 export const OAUTH = {
   key: {
     auth: 'auth',
@@ -46,7 +45,6 @@ export const OAUTH = {
   request: {
     refreshUserInfo: () => {
       return new Promise((resolve) => {
-        console.log(chrome);
         chrome.identity
           .getAuthToken({
             interactive: true,
@@ -58,78 +56,98 @@ export const OAUTH = {
       });
     },
     getMessages: () => {
-      console.log(nextPageToken + ' !!!!');
-      return new Promise(async (resolve) => {
-        const userInfo = await OAUTH.request.refreshUserInfo();
+      return new Promise<{ id: string; threadId: string }[]>(
+        async (resolve) => {
+          const userInfo = await OAUTH.request.refreshUserInfo();
 
-        if (!userInfo) {
-          resolve({ success: false });
-          console.log('error?');
-          return;
-        }
-
-        const googleUserId = await storageGet(config.keys.googleUserId);
-        //var nextPageToken = await storageGet(config.keys.nextPageToken);
-        let tokenPageParam = '';
-        if (nextPageToken) {
-          tokenPageParam = '&pageToken=' + nextPageToken;
-        }
-
-        const subjects = {
-          zara: 'Thank you for your purchase',
-          asos: 'Thanks for your order',
-          prettyLT: 'Your order confirmation',
-          boohoo: 'Your boohoo order confirmation',
-          mango: 'Thank you for shopping at MANGO',
-          misguided: 'Missguided: Order Confirmation',
-          hnm: 'Order confirmation',
-        } as const;
-
-        const keyWords = [
-          'asos',
-          'pretty little thing',
-          'h&n',
-          'zara',
-          'boohoo',
-          'mango',
-          'missguided',
-          'uniqlo',
-          'other stories',
-          'pull&bear',
-          'monki',
-          'na-kd',
-          'i saw it first',
-          'bershka',
-        ] as const;
-
-        const search = `subject:${Object.keys(subjects)
-          .map((key) => `(${subjects[key]})`)
-          .join(' OR ')}`;
-
-        fetch(
-          `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=500&includeSpamTrash=false${tokenPageParam}&q={${search}} after: ${new Date(
-            new Date().setFullYear(new Date().getFullYear() - 1)
-          )
-            .toLocaleDateString()
-            .split('/')
-            .reverse()
-            .join('/')} `,
-          {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${userInfo.access_token}`,
-            },
-            crossDomain: true,
+          if (!userInfo) {
+            resolve({ success: false });
+            console.log('error?');
+            return;
           }
-        )
-          .then(async (response) => {
-            const result = await response.json();
-            nextPageToken = result.nextPageToken;
-            console.log('!!!! what we got from Google', nextPageToken, result);
-            resolve(result);
-          })
-          .catch((error) => reject(error));
-      });
+
+          const subjects = {
+            zara: 'Thank you for your purchase',
+            asos: 'Thanks for your order',
+            prettyLT: 'Your order confirmation',
+            boohoo: 'Your boohoo order confirmation',
+            mango: 'Thank you for shopping at MANGO',
+            misguided: 'Missguided: Order Confirmation',
+            hnm: 'Order confirmation',
+          } as const;
+
+          const keyWords = [
+            'asos',
+            'pretty little thing',
+            'h&n',
+            'zara',
+            'boohoo',
+            'mango',
+            'missguided',
+            'uniqlo',
+            'other stories',
+            'pull&bear',
+            'monki',
+            'na-kd',
+            'i saw it first',
+            'bershka',
+          ] as const;
+
+          let tokenPageParam = '';
+
+          const emailMessages: { id: string; threadId: string }[] = [];
+          let nextPageToken: string;
+          let cycles = 0;
+          let shouldContinue = true;
+
+          const fetchMessages = async () => {
+            return new Promise<void>((resolve) => {
+              console.log('fetching messages', cycles, nextPageToken);
+              if (nextPageToken) {
+                tokenPageParam = '&pageToken=' + nextPageToken;
+              }
+              const search = `subject:${Object.keys(subjects)
+                .map((key) => `(${subjects[key]})`)
+                .join(' OR ')}`;
+
+              fetch(
+                `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=500&includeSpamTrash=false${tokenPageParam}&q={${search}} after: ${new Date(
+                  new Date().setFullYear(new Date().getFullYear() - 1)
+                )
+                  .toLocaleDateString()
+                  .split('/')
+                  .reverse()
+                  .join('/')} `,
+                {
+                  method: 'GET',
+                  headers: {
+                    Authorization: `Bearer ${userInfo.access_token}`,
+                  },
+                  crossDomain: true,
+                }
+              ).then(async (response) => {
+                const result = await response.json();
+                nextPageToken = result.nextPageToken;
+                if (!nextPageToken) {
+                  shouldContinue = false;
+                }
+                if (result.messages) {
+                  for (let i = 0; i < result.messages.length; i++) {
+                    emailMessages.push(result.messages[i]);
+                  }
+                  resolve();
+                }
+              });
+            });
+          };
+          await fetchMessages();
+          while (shouldContinue && cycles < 10) {
+            cycles++;
+            await fetchMessages();
+          }
+          resolve(emailMessages);
+        }
+      );
     },
 
     getSpecificMessage: (id: string) => {
@@ -142,8 +160,8 @@ export const OAUTH = {
           return;
         }
 
-        const googleUserId = await storageGet(config.keys.googleUserId);
-        //console.log(googleUserId);
+        const { googleUserId } = await storageGet(config.keys.googleUserId);
+        // console.log(googleUserId);
         fetch(
           `https://gmail.googleapis.com/gmail/v1/users/${googleUserId}/messages/${id}`,
           {

@@ -1,14 +1,8 @@
 import { config } from '../../../utils/config';
 import { OAUTH } from '../../../utils/oauth';
+import { ExtensionMessage } from '../../../utils/misc';
 
 console.log('background script loaded');
-
-class ExtensionMessage {
-  constructor(context, data) {
-    this.context = context;
-    this.data = data;
-  }
-}
 
 chrome.runtime.onMessage.addListener(async function (message, sender) {
   try {

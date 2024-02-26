@@ -6,16 +6,30 @@ import zara from "@assets/img/zara.png";
 import asos from "@assets/img/asos.png";
 import houseOfCb from "@assets/img/house_of_cb.png";
 import { OAUTH } from "../../../utils/oauth";
-import { storageGet } from "../../../utils/misc";
+import { ExtensionMessage, requestBackground, storageGet, storageSet } from "../../../utils/misc";
 import { config } from "../../../utils/config";
+import { loadUserMessages } from "../../../utils/processEmails";
 
 const screens = ['signIn', 'firstTimeUser', 'loadingEmails', 'startShopping', 'returningUser'] as const;
 type Screen = typeof screens[number];
 export default function Popup(): JSX.Element {
   const [screen, setScreen] = useState<Screen>();
+  const [name, setName] = useState<string>(null);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState<boolean>(true);
 
   useEffect(() => {
+    requestBackground(
+      new ExtensionMessage(config.keys.getProfileInfo)
+    ).then(async (profileInfo) => {
+      console.log(profileInfo);
+      setName(profileInfo.given_name);
+      await storageSet(config.keys.user, profileInfo);
+      await storageSet(
+        config.keys.googleUserId,
+        profileInfo.id
+      );
+      console.log('should have email, given name and ID now');
+    })
     storageGet(OAUTH.user.info)
       .then((user) => {
         console.log(user)
@@ -41,6 +55,7 @@ export default function Popup(): JSX.Element {
   }, [])
 
 
+
   const handleLogin = async () => {
     await OAUTH.user.signIn();
     if (isFirstTimeUser) {
@@ -56,9 +71,7 @@ export default function Popup(): JSX.Element {
   }
 
   const handleLoadEmails = async () => {
-    const messages = await OAUTH.request.getMessages();
-    console.log(messages);
-    setScreen('loadingEmails');
+    await loadUserMessages();
   }
 
   const SignIn = () => (
@@ -90,7 +103,7 @@ export default function Popup(): JSX.Element {
           className="h-[56px] pointer-events-none"
           alt="logo"
         />
-        <h1>Hello, NAME</h1>
+        <h1>Hello, {name}</h1>
         <p>efitter uses your past orders to predict your size.<br />
           To get started, click “load your emails”</p>
         <button onClick={handleLoadEmails}>Load your email</button>
@@ -120,7 +133,7 @@ export default function Popup(): JSX.Element {
             className="h-[56px] pointer-events-none"
             alt="logo"
           />
-          <h1>Hello, NAME</h1>
+          <h1>Hello, {name}</h1>
           <p>Give us a sec, searching for items...</p>
           <img
             src={loader}
@@ -144,7 +157,7 @@ export default function Popup(): JSX.Element {
           className="h-[56px] pointer-events-none"
           alt="logo"
         />
-        <h1>Hello, NAME</h1>
+        <h1>Hello, {name}</h1>
         <p>Now you&#39;re ready to shop!<br />
           Start shopping at your favorite brands including</p>
         <div className="flex items-center gap-8">
@@ -173,7 +186,7 @@ export default function Popup(): JSX.Element {
           className="h-[56px] pointer-events-none"
           alt="logo"
         />
-        <h1>Hello, NAME</h1>
+        <h1>Hello, {name}</h1>
         <p>You&#39;re ready to shop!<br />
           Click any of the brands below to start shopping</p>
         <div className="flex items-center gap-8">
