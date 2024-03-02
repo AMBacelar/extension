@@ -1,8 +1,17 @@
 import { config } from '../../../utils/config';
 import { OAUTH } from '../../../utils/oauth';
-import { ExtensionMessage } from '../../../utils/misc';
+import { ExtensionMessage, storageGet, storageSet } from '../../../utils/misc';
 
 console.log('background script loaded');
+
+const manifestData = chrome.runtime.getManifest();
+storageGet(config.keys.lastSavedVersion).then((lastSavedVersion) => {
+  if (lastSavedVersion !== manifestData.version) {
+    const newURL = 'https://www.efitter.com/whats-new';
+    chrome.tabs.create({ url: newURL });
+    storageSet(config.keys.lastSavedVersion, manifestData.version);
+  }
+});
 
 chrome.runtime.onMessage.addListener(async function (message, sender) {
   try {

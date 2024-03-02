@@ -160,7 +160,7 @@ export const OAUTH = {
           return;
         }
 
-        const { googleUserId } = await storageGet(config.keys.googleUserId);
+        const googleUserId = await storageGet(config.keys.googleUserId);
         // console.log(googleUserId);
         fetch(
           `https://gmail.googleapis.com/gmail/v1/users/${googleUserId}/messages/${id}`,

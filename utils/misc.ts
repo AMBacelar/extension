@@ -1,7 +1,12 @@
 export const storageSet = (key: string, value: any) =>
-  chrome.storage.local.set({ [key]: value });
+  new Promise<void>((resolve) => {
+    chrome.storage.local.set({ [key]: value }, () => resolve());
+  });
 
-export const storageGet = (key: string) => chrome.storage.local.get([key]);
+export const storageGet = <T>(key: string): Promise<T> =>
+  new Promise((resolve) => {
+    chrome.storage.local.get([key], (result) => resolve(result[key]));
+  });
 
 export const parseJwt = (token: string) => {
   const base64Url = token.split('.')[1];

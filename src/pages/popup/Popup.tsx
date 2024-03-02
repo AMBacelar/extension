@@ -9,6 +9,7 @@ import { OAUTH } from "../../../utils/oauth";
 import { ExtensionMessage, requestBackground, storageGet, storageSet } from "../../../utils/misc";
 import { config } from "../../../utils/config";
 import { loadUserMessages } from "../../../utils/processEmails";
+import { Product } from "utils/calculateSize";
 
 const screens = ['signIn', 'firstTimeUser', 'loadingEmails', 'startShopping', 'returningUser'] as const;
 type Screen = typeof screens[number];
@@ -34,9 +35,9 @@ export default function Popup(): JSX.Element {
       .then((user) => {
         console.log(user)
         if (user) {
-          storageGet(config.keys.products)
+          storageGet<Product[]>(config.keys.products)
             .then((products) => {
-              console.log(products)
+              console.log('products:', products)
               if (products && products.length > 0) {
                 setIsFirstTimeUser(false);
                 setScreen('returningUser');

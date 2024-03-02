@@ -2,7 +2,7 @@ import { Brand, Category, config } from './config';
 import { storageGet } from './misc';
 import { BrandKey, LegalSize, sizes } from './size';
 
-type Product = {
+export type Product = {
   brandName: Brand;
   category: Category;
   name: string;

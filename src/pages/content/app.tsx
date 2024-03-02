@@ -32,11 +32,11 @@ const App = () => {
       console.log(instructions)
       checkPage(instructions.toCheckPage)
         .then(res => {
-          console.log('1', res);
           if (res) {
             loadUserData(instructions.toLoadUserData, instructions.brand)
               .then(res => {
                 console.log('done', res);
+                handlePageParse(res.current_size, res.material, res.efitter_products, res.efitter_email);
               })
               .catch(err => {
                 console.log('oops', err);
@@ -44,7 +44,6 @@ const App = () => {
           }
         })
         .catch(err => console.log('2', err))
-      handlePageParse('XS', 'sample material string', [{ date: '2024-01-01' }], 'ambacelar@gmail.com');
     }
   }, [instructions]);
 

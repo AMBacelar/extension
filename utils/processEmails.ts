@@ -1,4 +1,6 @@
+import { Product, getCategory } from './calculateSize';
 import { Brand, config } from './config';
+import { ExtensionMessage, storageGet, storageSet } from './misc';
 import { OAUTH } from './oauth';
 import { getLegalSizes } from './size';
 
@@ -115,8 +117,8 @@ const parseAsos = async (body: string, date: string) => {
   return new Promise(async (resolve) => {
     const items = [];
     let startIndex;
-    let itemsIndex = body.lastIndexOf('Items');
-    let orderIndex = body.lastIndexOf('Your order');
+    const itemsIndex = body.lastIndexOf('Items');
+    const orderIndex = body.lastIndexOf('Your order');
 
     const completeParse = (responseFromMessage, itemArray = items) => {
       let array = responseFromMessage;
@@ -134,7 +136,7 @@ const parseAsos = async (body: string, date: string) => {
       const cart = array.toString().split(',,,');
       for (let index = 0; index < cart.length; index++) {
         const item = cart[index].split(',,');
-        let name = item[0];
+        const name = item[0];
         let size = null;
 
         if (item[2]) {
@@ -143,9 +145,9 @@ const parseAsos = async (body: string, date: string) => {
             size = size[0].replace(/\//g, '').trim();
           }
         }
-        let brandName = findBrand(name);
+        const brandName = findBrand(name);
         if (size != null && brandName !== undefined) {
-          let sanitizeDenim = size.split(/(W\d{2})/);
+          const sanitizeDenim = size.split(/(W\d{2})/);
           if (sanitizeDenim.length > 1) {
             size = sanitizeDenim[1].trim();
           }
@@ -164,7 +166,7 @@ const parseAsos = async (body: string, date: string) => {
           let size = null;
           let name = null;
           if (array[i].includes('Size: ')) {
-            let sanitizeDenim = array[i].split(/(W\d{2})/);
+            const sanitizeDenim = array[i].split(/(W\d{2})/);
             if (sanitizeDenim.length > 1) {
               size = sanitizeDenim[1];
             } else {
@@ -197,7 +199,7 @@ const parseAsos = async (body: string, date: string) => {
       startIndex = orderIndex + 10;
     }
 
-    let array = body
+    const array = body
       .substring(startIndex, body.lastIndexOf('Total'))
       .split('\n');
     let step = 5;
@@ -316,7 +318,7 @@ const parseNext = async (body: string, date: string) => {
         .substring(lines.indexOf('Description'), lines.indexOf('Total'))
         .split('\n');
       lines = lines.reduce<string[]>((lines, line) => {
-        let a = line.replaceAll('|', '').trim();
+        const a = line.replaceAll('|', '').trim();
         if (a !== '') {
           lines.push(a);
         }
@@ -413,7 +415,7 @@ const parseWeekday = async (body: string, date: string) => {
         .substring(lines.indexOf('Total price') + 11, lines.indexOf('Subtotal'))
         .split('\n');
       lines = lines.reduce<string[]>((lines, line) => {
-        let a = line.trim();
+        const a = line.trim();
         if (a !== '') {
           lines.push(a);
         }
@@ -505,7 +507,7 @@ const parseRiverIsland = async (body: string, date: string) => {
         )
         .split('\n');
       lines = lines.reduce<string[]>((lines, line) => {
-        let a = line.trim();
+        const a = line.trim();
         if (a !== '') {
           lines.push(a);
         }
@@ -554,7 +556,7 @@ const parseNewLook = async (body: string, date: string) => {
         )
         .split('\n');
       lines = lines.reduce<string[]>((lines, line) => {
-        let a = line.trim();
+        const a = line.trim();
         if (a !== '') {
           lines.push(a);
         }
@@ -1211,7 +1213,7 @@ const parseData = async (
       return lines;
     }, []);
 
-    let startIndex = lines.findIndex((line) => getCategory(line));
+    const startIndex = lines.findIndex((line) => getCategory(line));
     lines = lines.filter((line, index) => index >= startIndex);
     // chunk into 5's
     const itemBlocks = [];
@@ -1220,7 +1222,7 @@ const parseData = async (
     }
 
     itemBlocks.forEach((itemBlock) => {
-      let name = itemBlock[0];
+      const name = itemBlock[0];
       let size = null;
 
       const legalSizes = getLegalSizes(config.brands.pullBear);
@@ -1723,11 +1725,11 @@ const parseData = async (
 
 let totalFound = 0;
 
-async function saveProducts(items, sender) {
+async function saveProducts(items: Product[], sender) {
   let new_items = 0;
 
-  let products = (await storageGet(config.keys.products)) ?? [];
-  let newProducts = [];
+  const products = (await storageGet<Product[]>(config.keys.products)) ?? [];
+  const newProducts: Product[] = [];
   items.forEach((element) => {
     try {
       if (element.size && element.name) {
@@ -1736,7 +1738,7 @@ async function saveProducts(items, sender) {
           .replaceAll('\r', '')
           .replaceAll('\n', '');
         element.name = element.name?.replaceAll('\r', '').replaceAll('\n', '');
-        let duplicate = products?.filter(
+        const duplicate = products?.filter(
           (x) => x.name == element.name && x.size == element.size
         );
         if (element.name && element.size) {
@@ -1747,7 +1749,7 @@ async function saveProducts(items, sender) {
               newProducts.push(element);
             }
           } else if (element.name.match(/^\s+$/) === null) {
-            let message =
+            const message =
               'unknown category: ' +
               element.name +
               ' -- ' +
@@ -1769,12 +1771,9 @@ async function saveProducts(items, sender) {
   );
 
   totalFound += new_items;
-  await storageSet({ key: config.keys.receiptsCount, value: totalFound });
-  let allProducts = (await storageGet(config.keys.products)) ?? [];
-  await storageSet({
-    key: config.keys.products,
-    value: allProducts.concat(newProducts),
-  });
+  await storageSet(config.keys.receiptsCount, totalFound);
+  const allProducts = (await storageGet<Product[]>(config.keys.products)) ?? [];
+  await storageSet(config.keys.products, allProducts.concat(newProducts));
   chrome.runtime.sendMessage(
     new ExtensionMessage(
       config.keys.productsSaved,

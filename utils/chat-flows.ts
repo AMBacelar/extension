@@ -217,7 +217,7 @@ export const chatFlowGenerator = ({
           },
           ...{
             [`${prefix}size1`]: {
-              text: `We're sorry, your size is unavailable at this store.`,
+              text: `We're sorry, this product is unavailable in your size.`,
               next: `${prefix}size2`,
             },
           },

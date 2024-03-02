@@ -2,7 +2,11 @@ import {
   getMaterialCharacteristic,
   getMaterialsFromString,
 } from '../../../utils/materials';
-import { calculateSize, getCategory } from '../../../utils/calculateSize';
+import {
+  Product,
+  calculateSize,
+  getCategory,
+} from '../../../utils/calculateSize';
 import { Brand, config } from '../../../utils/config';
 import { Instruction, InstructionType } from '../../../utils/instructions';
 import { elementAppear, forSeconds, storageGet } from '../../../utils/misc';
@@ -111,9 +115,13 @@ export const checkPage = async (instructions: Instruction[]) => {
       const lines = test.split('\n').map((line) => line.trim());
       for (let index = 0; index < lines.length; index++) {
         if (lines[index].includes('shotData')) {
-          const toParse = lines[index].slice(lines[index].indexOf('{'));
-          data = JSON.parse(toParse);
-          break;
+          try {
+            const toParse = lines[index].slice(lines[index].indexOf('{'));
+            data = JSON.parse(toParse);
+            break;
+          } catch {
+            /* empty */
+          }
         }
       }
       variables['product-title'] = data.Styles[0].StyleName;
@@ -249,19 +257,25 @@ export const loadUserData = async (
     }
     if (instruction.type === 'surrenderToNext') {
       let data;
+      let target;
       const test = window['shotData'].text.replaceAll(';', '');
       const lines = test.split('\n').map((line) => line.trim());
       for (let index = 0; index < lines.length; index++) {
         if (lines[index].includes('shotData')) {
-          const toParse = lines[index].slice(lines[index].indexOf('{'));
-          data = JSON.parse(toParse);
-          break;
+          try {
+            target = lines[index].slice(lines[index].indexOf('{'));
+            data = JSON.parse(target);
+            break;
+          } catch {
+            /* empty */
+          }
         }
       }
 
       variables['product-title'] = data.Styles[0].StyleName;
       variables['category'] = getCategory(data.Styles[0].StyleName);
-      variables['attribute-list'] = data.Styles[0].Fits[0].Items[0].Composition;
+      variables['attribute-list'] =
+        data.Styles[0].Fits[0].Items[0].Composition || target;
       variables['brand'] = data.Styles[0].Brand === 'Next' ? 'Next' : false;
     }
   }
@@ -279,11 +293,11 @@ export const loadUserData = async (
     current_size: result.size,
     pastsize: result.pastsize,
     material: result.material,
-    efitter_name: profileInfo?.name,
-    efitter_products: await storageGet(config.keys.products),
+    efitter_name: profileInfo?.name || '',
+    efitter_products: (await storageGet<Product[]>(config.keys.products)) || [],
     efitter_styleGuru: await storageGet(config.keys.styleGuruArchetype),
 
-    efitter_email: profileInfo?.email,
+    efitter_email: profileInfo?.email || '',
     efitter_productName: variables['product-title'],
     efitter_sizeFromPage: variables['size'],
     efitter_category: variables['category'],
