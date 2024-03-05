@@ -164,7 +164,7 @@ export const loadUserData = async (
       const element = document.querySelector(instruction.selector);
       if (typeof element != 'undefined' && element != null) {
         variables[instruction.name] = element.textContent.trim();
-
+        console.log(variables[instruction.name], element.textContent.trim());
         if (instruction.name === 'product-title') {
           const category = getCategory(element.textContent);
           if (category) {
