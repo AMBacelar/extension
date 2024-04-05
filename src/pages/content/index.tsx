@@ -5,6 +5,7 @@ import App from "./app";
 
 const div = document.createElement("div");
 div.id = "__root";
+div.classList.add("efitter-root");
 document.body.appendChild(div);
 
 const rootContainer = document.querySelector("#__root");

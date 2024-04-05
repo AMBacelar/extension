@@ -14,46 +14,46 @@ import { Product } from "utils/calculateSize";
 const screens = ['signIn', 'firstTimeUser', 'loadingEmails', 'startShopping', 'returningUser'] as const;
 type Screen = typeof screens[number];
 export default function Popup(): JSX.Element {
-  const [screen, setScreen] = useState<Screen>();
-  const [name, setName] = useState<string>(null);
+  const [screen, setScreen] = useState<Screen>('startShopping');
+  const [name, setName] = useState<string>('Adilson');
   const [isFirstTimeUser, setIsFirstTimeUser] = useState<boolean>(true);
 
-  useEffect(() => {
-    requestBackground(
-      new ExtensionMessage(config.keys.getProfileInfo)
-    ).then(async (profileInfo) => {
-      console.log(profileInfo);
-      setName(profileInfo.given_name);
-      await storageSet(config.keys.user, profileInfo);
-      await storageSet(
-        config.keys.googleUserId,
-        profileInfo.id
-      );
-      console.log('should have email, given name and ID now');
-    })
-    storageGet(OAUTH.user.info)
-      .then((user) => {
-        console.log(user)
-        if (user) {
-          storageGet<Product[]>(config.keys.products)
-            .then((products) => {
-              console.log('products:', products)
-              if (products && products.length > 0) {
-                setIsFirstTimeUser(false);
-                setScreen('returningUser');
-              } else {
-                setScreen('firstTimeUser');
-              }
-            })
-        } else {
-          setScreen('signIn');
-        }
-      })
-      .catch(() => {
-        setScreen('signIn');
-      })
+  // useEffect(() => {
+  //   requestBackground(
+  //     new ExtensionMessage(config.keys.getProfileInfo)
+  //   ).then(async (profileInfo) => {
+  //     console.log(profileInfo);
+  //     setName(profileInfo.given_name);
+  //     await storageSet(config.keys.user, profileInfo);
+  //     await storageSet(
+  //       config.keys.googleUserId,
+  //       profileInfo.id
+  //     );
+  //     console.log('should have email, given name and ID now');
+  //   })
+  //   storageGet(OAUTH.user.info)
+  //     .then((user) => {
+  //       console.log(user)
+  //       if (user) {
+  //         storageGet<Product[]>(config.keys.products)
+  //           .then((products) => {
+  //             console.log('products:', products)
+  //             if (products && products.length > 0) {
+  //               setIsFirstTimeUser(false);
+  //               setScreen('returningUser');
+  //             } else {
+  //               setScreen('firstTimeUser');
+  //             }
+  //           })
+  //       } else {
+  //         setScreen('signIn');
+  //       }
+  //     })
+  //     .catch(() => {
+  //       setScreen('signIn');
+  //     })
 
-  }, [])
+  // }, [])
 
 
 
@@ -80,19 +80,19 @@ export default function Popup(): JSX.Element {
       <header className="flex flex-col items-center justify-center text-black">
         <img
           src={logo}
-          className="h-[56px] pointer-events-none"
+          className="h-[56px] pointer-events-none mt-[70px] mb-0"
           alt="logo"
         />
-        <h1>Hello!</h1>
+        <h1 className="mt-[32px] text-[85px]">Hello!</h1>
         <p>Let&#39;s get started</p>
         <button onClick={handleLogin}>Google</button>
-        <p>Now Available at</p>
-        <div className="flex items-center gap-8">
+        <p className="">Now Available at</p>
+        <div className="flex items-center my-[30px] gap-8">
           <img className="w-[85px] h-[14px]" src={mango} />
           <img className="w-[49px] h-[19px]" src={zara} />
           <img className="w-[97px] h-[27px]" src={houseOfCb} />
         </div>
-        <a href="">Browse our brand directory</a>
+        <a className="underline" href="https://www.efitter.com/brand-directory">Browse our brand directory</a>
       </header>
     </>)
 
@@ -101,50 +101,51 @@ export default function Popup(): JSX.Element {
       <header className="flex flex-col items-center justify-center text-black">
         <img
           src={logo}
-          className="h-[56px] pointer-events-none"
+          className="h-[56px] pointer-events-none mt-[59px] mb-0"
           alt="logo"
         />
-        <h1>Hello, {name}</h1>
+        <h1 className="mt-[26px] text-[56px]">Hello, {name}</h1>
         <p>efitter uses your past orders to predict your size.<br />
           To get started, click “load your emails”</p>
-        <button onClick={handleLoadEmails}>Load your email</button>
-        <a href="https://www.efitterapp.com/how-it-works"
+        <button className="mt-[76px] py-3 px-10 bg-[#FFD9E3] rounded-lg" onClick={handleLoadEmails}>Load your email</button>
+        <a className="py-3 mt-6 px-[30px] border border-black rounded-lg" href="https://www.efitterapp.com/how-it-works"
           target="_blank" rel="noreferrer">How it works</a>
-        <button onClick={handleLogout}>Log out</button>
+        <button className="mt-[76px] underline" onClick={handleLogout}>Log out</button>
       </header>
     </>
   )
 
   const LoadingEmails = () => {
-    useEffect(() => {
-      setTimeout(() => {
-        if (isFirstTimeUser) {
-          setScreen('startShopping')
-        } else {
-          setScreen('returningUser')
-        }
-      }, 1000);
-    }, [])
+    // useEffect(() => {
+    //   setTimeout(() => {
+    //     if (isFirstTimeUser) {
+    //       setScreen('startShopping')
+    //     } else {
+    //       setScreen('returningUser')
+    //     }
+    //   }, 1000);
+    // }, [])
 
     return (
       <>
         <header className="flex flex-col items-center justify-center text-black">
           <img
             src={logo}
-            className="h-[56px] pointer-events-none"
+            className="h-[56px] pointer-events-none mt-[59px] mb-0"
             alt="logo"
           />
-          <h1>Hello, {name}</h1>
+          <h1 className="mt-[26px] text-[56px]">Hello, {name}</h1>
           <p>Give us a sec, searching for items...</p>
           <img
             src={loader}
-            className="h-[114px] pointer-events-none"
+            className="h-[114px] my-10 pointer-events-none"
             alt="logo"
           />
-          <p>email count</p>
+          {/* <p>email count</p> */}
           <a href="https://www.efitterapp.com/how-it-works"
+            className="py-3 px-10 bg-[#FFD9E3] rounded-lg"
             target="_blank" rel="noreferrer">How it works</a>
-          <button onClick={handleLogout}>Log out</button>
+          <button className="mt-[50px] underline" onClick={handleLogout}>Log out</button>
         </header>
       </>
     )
@@ -209,7 +210,7 @@ export default function Popup(): JSX.Element {
   )
 
   return (
-    <div className="absolute top-0 left-0 right-0 bottom-0 text-center h-[600px] w-[572px] p-3 bg-white">
+    <div className="absolute top-0 left-0 right-0 bottom-0 text-center h-[600px] w-[572px] bg-white">
       {screen === 'signIn' && <SignIn />}
       {screen === 'firstTimeUser' && <FirstTimeUser />}
       {screen === 'loadingEmails' && <LoadingEmails />}

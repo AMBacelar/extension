@@ -119,6 +119,8 @@ export const matcharacteristic = [
 ] as const;
 
 export const getMaterialsFromString = (inputString: string) => {
+  console.log('########');
+  console.log(inputString);
   const mat = new Set();
   matcharacteristic.forEach((material) => {
     if (inputString.toLowerCase().includes(material.Name.toLowerCase())) {

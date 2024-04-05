@@ -76,12 +76,12 @@ export const chatFlowGenerator = ({
 
   const start = {
     '1': {
-      image: 'https://media.giphy.com/media/ELUtlbLMx8K0U/giphy.gif',
-      text: 'Hey!',
+      text: "Hey! 👋  I'm efitter. I'm here to help you shop 😁",
       next: '2',
     },
     '2': {
-      text: "Hey! 👋  I'm efitter. I'm here to help you shop 😁",
+      image: 'https://media.giphy.com/media/ELUtlbLMx8K0U/giphy.gif',
+      text: 'Hey!',
       next: `${generatePrefix({
         hasAskedAboutSize: false,
         hasAskedAboutMaterial: false,
