@@ -117,7 +117,7 @@
   display: flex;
   justify-content: center;
   width: fit-content;
-  border-radius: 0.75rem 0.75rem 0.125rem;
+  border-bottom-right-radius: 0;
   font-family: 'Raleway', sans-serif !important;
 }
 .efitter-chat-area {
@@ -172,9 +172,9 @@
   opacity: 0;
   transform: translateY(-50%);
   transition: all 0.3s 0.3s;
-  border-radius: 12px;
+  border-radius: 30px;
   background-color: rgb(113, 46, 73);
-  padding: 1rem 1.5rem;
+  padding: 0.8rem 1rem;
   line-height: 1.4;
   color: rgb(255, 235, 239);
   width: max-content;
@@ -183,8 +183,9 @@
   font-size: 14px;
 }
 .efitter-chat-response {
-  color: rgb(113, 46, 73);
+  color: #000000;
   background-color: rgb(255, 235, 239);
+  border-bottom-left-radius: 0;
   margin-left: 45px;
   position: relative;
 }
@@ -205,11 +206,11 @@
   text-decoration: underline;
 }
 .efitter-chat-ask {
-  background-color: #fff;
+  background-color: #712e49;
   margin-right: 0;
   margin-left: auto;
-  border: 1px solid rgb(113, 46, 73);
-  color: rgb(113, 46, 73);
+  border: transparent;
+  color: white;
 }
 .efitter-choices {
   color: rgb(255, 235, 239);
@@ -217,28 +218,31 @@
   transform: translateY(-50%);
   transition: all 0.3s 0.3s;
   transition: opacity 0.3s 0.3s;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
   align-items: stretch;
+  width: 60%;
+  position: relative;
+  right: 0;
+  margin-left: auto;
 }
 .efitter-choice {
   display: inline-block;
   outline: none;
-  border: 1px solid rgb(113, 46, 73);
-  background-color: rgb(113, 46, 73);
+  background-color: white;
   font-size: 14px;
   line-height: 1.3;
   margin-bottom: 0.5rem;
   margin-right: 0.5rem;
   text-decoration: none;
-  color: inherit;
+  color: #712e49;
   cursor: pointer;
-  width: calc(50% - 0.5rem);
+  width: 100%;
   border-radius: 0.3rem;
-  border: 0.125rem solid transparent;
-  padding: 1rem;
+  border: 0.125rem solid #712e49;
+  padding: 0.4rem;
   text-align: center;
 }
 a.efitter-choice {
