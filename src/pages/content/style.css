@@ -99,26 +99,42 @@
   height: 100%;
   border: none;
   border-radius: 50%;
-  background: 255, 235, 239;
+  background: rgb(255, 235, 239);
   cursor: pointer;
   box-shadow: 0 0 0 0 rgba(255, 235, 239, 0.8);
+  animation: pulse 1.5s infinite;
   -webkit-animation: pulse 1.5s infinite;
 }
 
 #efitter-chatbot_toggle .efitter-untoggled-button:hover {
+  animation: none;
   -webkit-animation: none;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.9);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 50px rgba(255, 235, 239, 0);
+  }
+  100% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(255, 235, 239, 0);
+  }
 }
 
 @-webkit-keyframes pulse {
   0% {
-    @include transform(scale(0.9));
+    -webkit-transform: scale(0.9);
   }
   70% {
-    @include transform(scale(1));
+    -webkit-transform: scale(1);
     box-shadow: 0 0 0 50px rgba(255, 235, 239, 0);
   }
   100% {
-    @include transform(scale(0.9));
+    -webkit-transform: scale(0.9);
     box-shadow: 0 0 0 0 rgba(255, 235, 239, 0);
   }
 }

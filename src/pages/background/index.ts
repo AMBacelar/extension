@@ -36,6 +36,9 @@ chrome.runtime.onMessage.addListener((message, sender) => {
         console.log('called from here?');
         getProfileInfo(message);
         break;
+      default:
+        console.log('$%^& we missed this one', message.context);
+        break;
     }
   } catch (error) {
     console.log(error);
@@ -44,7 +47,9 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 
 async function runLoadMessages(message, sender) {
   await loadMessages(message, sender);
-  requestBackground(new ExtensionMessage(message.context, true));
+  const products = (await storageGet<Product[]>(config.keys.products)) ?? [];
+  console.log('all stored products: ', products);
+  requestBackground(new ExtensionMessage(message.context, products));
 }
 
 async function getProfileInfo(message) {

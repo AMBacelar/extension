@@ -101,7 +101,6 @@ const processFewMessages = async (flow: Entry[], sender) => {
       continue;
     }
   }
-  console.log(messages.length, messages);
 };
 
 export const loadMessages = async (message, sender) => {

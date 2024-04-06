@@ -6,6 +6,7 @@ import { LegalSize } from "../../../utils/size";
 import { InstructionsResponse } from "../../../utils/instructions";
 import { forSeconds } from "../../../utils/misc";
 import { checkPage, loadUserData } from "./executeInstructions";
+import { Product } from "utils/calculateSize";
 
 let efitterBot;
 
@@ -22,6 +23,23 @@ const App = () => {
       return instructions;
     }
   });
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    console.log('setting up event listeners');
+    const handleNewUrl = (event) => console.log('url changed', event);
+    const handleNewUrl2 = (message) => {
+      if (message.context === 'DOMReloaded') {
+        console.log('url changed', window.location.href)
+      }
+    };
+    window.addEventListener('popstate', handleNewUrl);
+    chrome.runtime.onMessage.addListener(handleNewUrl2);
+    return () => {
+      window.removeEventListener('popstate', handleNewUrl);
+      chrome.runtime.onMessage.removeListener(handleNewUrl2);
+    }
+  }, []);
 
   useEffect(() => {
     console.log('run it all again!');
@@ -35,7 +53,8 @@ const App = () => {
           if (res) {
             loadUserData(instructions.toLoadUserData, instructions.brand)
               .then(res => {
-                console.log('done', res);
+                console.log('done, 3', res);
+                setLoaded(true);
                 handlePageParse(res.current_size, res.material, res.efitter_products, res.efitter_email);
               })
               .catch(err => {
@@ -85,6 +104,10 @@ const App = () => {
 
   if (!instructions || (instructions.brand as string) === '') {
     console.log('not yet')
+    return null;
+  }
+
+  if (!loaded) {
     return null;
   }
 
@@ -139,7 +162,8 @@ const App = () => {
             </div>
           </div>
         </div>
-      </div></>
+      </div>
+    </>
   );
 };
 

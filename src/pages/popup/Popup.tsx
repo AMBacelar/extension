@@ -30,8 +30,13 @@ export default function Popup(): JSX.Element {
 
     switch (request.context) {
       case config.keys.productsSaved:
-        console.log('blah');
         setProductsFound(request.data.data);
+        break;
+      case 'getTextContentHelper':
+        body = request.payload;
+        div = document.createElement('div');
+        div.innerHTML = body;
+        sendResponse(div.textContent);
         break;
       case 'createDivForAsos':
         body = request.payload;
@@ -50,6 +55,9 @@ export default function Popup(): JSX.Element {
             .substring(startIndex, body.lastIndexOf('Total'))
             .split(/[ \t]{2,}/)
         );
+        break;
+      default:
+        console.log('$%^& we missed this one', request.context);
         break;
     }
   }
@@ -105,8 +113,7 @@ export default function Popup(): JSX.Element {
     if (screen === 'loadingEmails') {
       requestBackground(
         new ExtensionMessage(config.keys.loadMessages)
-      ).then((messages): void => {
-        console.log('yolo in the background?', messages);
+      ).then((): void => {
         if (isFirstTimeUser) {
           setProductsFound(0);
           setScreen('startShopping')
@@ -192,16 +199,18 @@ export default function Popup(): JSX.Element {
           />
           <h1 className="mt-[26px] text-[56px]">Hello, {name}</h1>
           <p className="text-[15px]">Give us a sec, searching for items...</p>
-          <img
-            src={loader}
-            className="h-[114px] my-10 pointer-events-none"
-            alt="logo"
-          />
-          {productsFound > 0 && <p className="text-[15px]">{productsFound}</p>}
+          <div className="my-10 h-[114px]">
+            <img
+              src={loader}
+              className="h-[114px] pointer-events-none"
+              alt="logo"
+            />
+            <p className="text-[16.6px] mt-[-69px]">{productsFound}</p>
+          </div>
           <a href="https://www.efitterapp.com/how-it-works"
             className="py-3 px-10 text-[#712E49] bg-[#FFD9E3] rounded-lg"
             target="_blank" rel="noreferrer">How it works</a>
-          <button className="mt-[50px] text-[#712E49] underline" onClick={handleLogout}>Log out</button>
+          <button className="mt-[50px] text-[#712E49] text-[16px] underline" onClick={handleLogout}>Log out</button>
         </header>
       </>
     )

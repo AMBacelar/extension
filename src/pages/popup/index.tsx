@@ -6,8 +6,6 @@ import Popup from '@pages/popup/Popup';
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   let div, body, itemsIndex, orderIndex, startIndex;
-
-  console.log('hello world!')
   switch (request.context) {
     case 'getTextContentHelper':
 
