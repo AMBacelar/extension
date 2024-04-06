@@ -11,6 +11,9 @@ import { ExtensionMessage, requestBackground, storageGet, storageSet } from "../
 import { config } from "../../../utils/config";
 import { Product } from "utils/calculateSize";
 
+import { Bounce, ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const screens = ['signIn', 'firstTimeUser', 'loadingEmails', 'startShopping', 'returningUser'] as const;
 type Screen = typeof screens[number];
 export default function Popup(): JSX.Element {
@@ -18,6 +21,7 @@ export default function Popup(): JSX.Element {
   const [name, setName] = useState<string>();
   const [isFirstTimeUser, setIsFirstTimeUser] = useState<boolean>(true);
   const [productsFound, setProductsFound] = useState<number>(0);
+  const [toastValue, setToastValue] = useState<number>(34);
 
   const calledOnce = useRef(false);
 
@@ -119,6 +123,7 @@ export default function Popup(): JSX.Element {
           setScreen('startShopping')
         } else {
           setProductsFound(0);
+          toast('search complete');
           setScreen('returningUser')
         }
       })
@@ -285,6 +290,7 @@ export default function Popup(): JSX.Element {
       {screen === 'loadingEmails' && <LoadingEmails />}
       {screen === 'startShopping' && <StartShopping />}
       {screen === 'returningUser' && <ReturningUser />}
+      <ToastContainer />
     </div>
   );
 }

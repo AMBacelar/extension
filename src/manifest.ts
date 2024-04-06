@@ -25,6 +25,7 @@ const manifest: Manifest.WebExtensionManifest & { oauth2: any; key?: string } =
     action: {
       default_popup: 'src/pages/popup/index.html',
       default_icon: 'icon.png',
+      default_title: pkg.displayName,
     },
     icons: {
       '128': 'icon.png',
@@ -33,17 +34,20 @@ const manifest: Manifest.WebExtensionManifest & { oauth2: any; key?: string } =
     content_scripts: [
       {
         matches: ['<all_urls>'],
-        js: ['src/pages/content/index.js'],
+        js: ['src/pages/content/index.js', 'src/pages/site/index.js'],
         css: ['contentStyle.css'],
+        run_at: 'document_end',
       },
     ],
-    // devtools_page: 'src/pages/devtools/index.html',
     web_accessible_resources: [
       {
         resources: ['contentStyle.css', 'icon.png'],
         matches: [],
       },
     ],
+    content_security_policy: {
+      extension_pages: "script-src 'self'; object-src 'self'",
+    },
   };
 
 export default manifest;

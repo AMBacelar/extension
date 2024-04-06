@@ -54,7 +54,6 @@ const App = () => {
             loadUserData(instructions.toLoadUserData, instructions.brand)
               .then(res => {
                 console.log('done, 3', res);
-                setLoaded(true);
                 handlePageParse(res.current_size, res.material, res.efitter_products, res.efitter_email);
               })
               .catch(err => {
@@ -99,6 +98,7 @@ const App = () => {
     const products = efitter_products.filter(
       (x: { date: string | number | Date; }) => Math.abs(today.getTime() - new Date(x.date).getTime()) / (1000 * 3600 * 24) / 30 <= 12
     );
+    setLoaded(true);
     setupEfitterBot(current_size, material, products.length, efitter_email);
   }, []);
 
