@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import logo from "@assets/img/logo.svg";
 import loader from "@assets/img/loading.gif";
 import mango from "@assets/img/mango.png";
@@ -9,7 +9,6 @@ import houseOfCb from "@assets/img/house_of_cb.png";
 import { OAUTH } from "../../../utils/oauth";
 import { ExtensionMessage, requestBackground, storageGet, storageSet } from "../../../utils/misc";
 import { config } from "../../../utils/config";
-import { loadUserMessages } from "../../../utils/processEmails";
 import { Product } from "utils/calculateSize";
 
 const screens = ['signIn', 'firstTimeUser', 'loadingEmails', 'startShopping', 'returningUser'] as const;
@@ -18,8 +17,48 @@ export default function Popup(): JSX.Element {
   const [screen, setScreen] = useState<Screen>('signIn');
   const [name, setName] = useState<string>();
   const [isFirstTimeUser, setIsFirstTimeUser] = useState<boolean>(true);
+  const [productsFound, setProductsFound] = useState<number>(0);
+
+  const calledOnce = useRef(false);
+
+  const listeners = async (request, sender, sendResponse) => {
+    let div;
+    let body;
+    let itemsIndex;
+    let orderIndex;
+    let startIndex;
+
+    switch (request.context) {
+      case config.keys.productsSaved:
+        console.log('blah');
+        setProductsFound(request.data.data);
+        break;
+      case 'createDivForAsos':
+        body = request.payload;
+        div = document.createElement('div');
+        div.innerHTML = body;
+        itemsIndex = div.textContent.lastIndexOf('Items');
+        orderIndex = div.textContent.lastIndexOf('Your order');
+        if (itemsIndex > -1) {
+          startIndex = itemsIndex + 5;
+        }
+        if (orderIndex > -1) {
+          startIndex = orderIndex + 10;
+        }
+        sendResponse(
+          div.textContent
+            .substring(startIndex, body.lastIndexOf('Total'))
+            .split(/[ \t]{2,}/)
+        );
+        break;
+    }
+  }
 
   useEffect(() => {
+    if (calledOnce.current) {
+      return;
+    }
+
     requestBackground(
       new ExtensionMessage(config.keys.getProfileInfo)
     ).then(async (profileInfo) => {
@@ -53,7 +92,31 @@ export default function Popup(): JSX.Element {
         setScreen('signIn');
       })
 
-  }, [])
+    chrome.runtime.onMessage.addListener(listeners);
+
+    calledOnce.current = true;
+
+    return () => {
+      chrome.runtime.onMessage.removeListener(listeners);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (screen === 'loadingEmails') {
+      requestBackground(
+        new ExtensionMessage(config.keys.loadMessages)
+      ).then((messages): void => {
+        console.log('yolo in the background?', messages);
+        if (isFirstTimeUser) {
+          setProductsFound(0);
+          setScreen('startShopping')
+        } else {
+          setProductsFound(0);
+          setScreen('returningUser')
+        }
+      })
+    }
+  }, [screen]);
 
   const handleLogin = async () => {
     await OAUTH.user.signIn();
@@ -89,7 +152,7 @@ export default function Popup(): JSX.Element {
             src={googleSigninButton}
           />
         </button>
-        <p className="">Now Available at</p>
+        <p className="">Now available at</p>
         <div className="flex items-center my-[30px] gap-8">
           <img className="w-[85px] h-[14px]" src={mango} />
           <img className="w-[49px] h-[19px]" src={zara} />
@@ -119,18 +182,6 @@ export default function Popup(): JSX.Element {
   )
 
   const LoadingEmails = () => {
-    useEffect(() => {
-      loadUserMessages()
-        .then(() => {
-          if (isFirstTimeUser) {
-            setScreen('startShopping')
-          } else {
-            setScreen('returningUser')
-          }
-        })
-        .catch(() => { /* no-op */ });
-    }, [])
-
     return (
       <>
         <header className="flex flex-col items-center justify-center text-black">
@@ -146,7 +197,7 @@ export default function Popup(): JSX.Element {
             className="h-[114px] my-10 pointer-events-none"
             alt="logo"
           />
-          {/* <p className="text-[15px]">email count</p> */}
+          {productsFound > 0 && <p className="text-[15px]">{productsFound}</p>}
           <a href="https://www.efitterapp.com/how-it-works"
             className="py-3 px-10 text-[#712E49] bg-[#FFD9E3] rounded-lg"
             target="_blank" rel="noreferrer">How it works</a>

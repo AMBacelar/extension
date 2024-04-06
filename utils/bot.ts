@@ -180,7 +180,7 @@ export class Bot {
       }
     } else {
       response.classList.add('efitter-chat-response');
-      response.classList.add('raleway-efitter');
+      response.classList.add('dm-sans-efitter');
 
       if (step.text.includes('{{')) {
         if (step.text.includes('{{materials}}')) {

@@ -55,7 +55,7 @@ export const OAUTH = {
           });
       });
     },
-    getMessages: () => {
+    getMessages: async ():Promise<{ id: string; threadId: string }[]> => {
       return new Promise<{ id: string; threadId: string }[]>(
         async (resolve) => {
           const userInfo = await OAUTH.request.refreshUserInfo();

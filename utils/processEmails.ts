@@ -8,31 +8,21 @@ function htmlToText(str: string) {
   return str.replace(/<\/?[^>]+>/gi, ' ');
 }
 
+let totalFound = 0;
 type Entry = { id: string; threadId: string };
 const processAllMessages = async (entries: Entry[], sender) => {
   return new Promise<void>((resolve) => {
-    const flows = splitEntries(entries, config.keys.flowCount);
+    const flows = generateFlows(entries, config.keys.flowCount);
     const flowPromises = [];
     for (const flow of flows) {
       flowPromises.push(processFewMessages(flow, sender));
     }
 
     Promise.allSettled(flowPromises).then((result) => {
-      console.log(result);
+      totalFound = 0;
       resolve();
     });
   });
-};
-
-/**
- * Splits an array of entries into multiple arrays, each with a maximum of `flowCount` elements.
- * @param entries - the array of entries to split
- * @param flowCount - the maximum number of elements in each array
- * @returns an array of arrays, where each sub-array contains `flowCount` or fewer elements
- */
-const splitEntries = (entries: Entry[], flowCount: number): Entry[][] => {
-  const flows = generateFlows(entries, flowCount);
-  return flows;
 };
 
 /**
@@ -55,18 +45,49 @@ const generateFlows = (entries: Entry[], flowCount: number): Entry[][] => {
   return flows;
 };
 
+const deepSearchForBody = (parts, cycles = 0) => {
+  if (cycles > 10) {
+    return;
+  }
+  if (parts[0].body.data) {
+    return parts[0].body.data;
+  } else {
+    return deepSearchForBody(parts[0].parts, cycles + 1);
+  }
+};
+
 const processFewMessages = async (flow: Entry[], sender) => {
+  const messages = [];
   for (let i = 0; i < flow.length; i++) {
-    const message = await OAUTH.request.getSpecificMessage(flow[i].id);
-    const data = message.payload.parts
-      ? message.payload.parts[0].body.data
-      : message.payload.body.data;
-
-    const message_body = atob(
-      decodeURIComponent(data.replace(/-/g, '+').replace(/_/g, '/'))
-    );
-
     try {
+      const message = await OAUTH.request.getSpecificMessage(flow[i].id);
+      const data = message.payload.body.data
+        ? message.payload.body.data
+        : deepSearchForBody(message.payload.parts);
+
+      if (!data) {
+        console.log('$$$ no data!', {
+          snippet: message.snippet,
+          from: message.payload.headers.filter((x) => x.name == 'From')[0],
+          message,
+        });
+        continue;
+      }
+
+      const message_body = atob(
+        decodeURIComponent(data.replace(/-/g, '+').replace(/_/g, '/'))
+      );
+
+      // Next phase of the debug process
+      messages.push({
+        subject: message.payload.headers.filter((x) => x.name == 'Subject')[0]
+          .value,
+        body: message_body,
+        date: message.payload.headers.filter(
+          (x) => x.name.toLowerCase() === 'date'
+        )[0].value,
+      });
+
       parseData(
         message.payload.headers.filter((x) => x.name == 'Subject')[0].value,
         message_body,
@@ -77,13 +98,15 @@ const processFewMessages = async (flow: Entry[], sender) => {
       );
     } catch (ex) {
       console.log('$$', ex);
+      continue;
     }
   }
+  console.log(messages.length, messages);
 };
 
-export const loadUserMessages = async () => {
+export const loadMessages = async (message, sender) => {
   const messages = await OAUTH.request.getMessages();
-  await processAllMessages(messages);
+  return await processAllMessages(messages, sender);
 };
 
 const findBrand = (stringContainingBrand: string) => {
@@ -451,6 +474,7 @@ const parseCOS = async (body: string, date: string) => {
     const items = [];
 
     const completeParse = (responseFromMessage, itemArray = items) => {
+      console.log(first);
       let lines = responseFromMessage;
       lines = lines.split('\n');
       lines = lines.reduce((lines, line) => {
@@ -1516,38 +1540,50 @@ const parseData = async (
   };
 
   if (subject.toLowerCase().includes('Thanks for your order'.toLowerCase())) {
-    let payload;
-    if (body.includes('Next Retail Ltd')) {
-      // Next
-      console.log('Next', subject, date);
-      payload = await parseNext(body, date);
-    } else {
-      //ASOS
-      console.log('Asos', subject, date);
-      payload = await parseAsos(body, date);
+    try {
+      let payload;
+      if (body.includes('Next Retail Ltd')) {
+        // Next
+        console.log('Next', subject, date);
+        payload = await parseNext(body, date);
+      } else {
+        //ASOS
+        console.log('Asos', subject, date);
+        payload = await parseAsos(body, date);
+      }
+      payload.forEach((item) => {
+        items.push(item);
+      });
+      saveData = true;
+    } catch (error) {
+      console.log(error);
     }
-    payload.forEach((item) => {
-      items.push(item);
-    });
-    saveData = true;
   } else if (
     subject.toLowerCase().includes('Thank you for your order'.toLowerCase())
   ) {
     //COS
-    const payload = await parseCOS(body, date);
-    payload.forEach((item) => {
-      items.push(item);
-    });
-    saveData = true;
+    try {
+      const payload = await parseCOS(body, date);
+      payload.forEach((item) => {
+        items.push(item);
+      });
+      saveData = true;
+    } catch (error) {
+      console.log(error);
+    }
   } else if (
     subject.toLowerCase().includes("We've got your order".toLowerCase())
   ) {
     //New Look
-    const payload = await parseNewLook(body, date);
-    payload.forEach((item) => {
-      items.push(item);
-    });
-    saveData = true;
+    try {
+      const payload = await parseNewLook(body, date);
+      payload.forEach((item) => {
+        items.push(item);
+      });
+      saveData = true;
+    } catch (error) {
+      console.log(error);
+    }
   } else if (
     subject.toLowerCase().includes('Your order confirmation'.toLowerCase())
   ) {
@@ -1565,11 +1601,15 @@ const parseData = async (
   ) {
     console.log('Mango', subject, date);
     //Mango
-    const payload = await parseMango(body, date);
-    payload.forEach((item) => {
-      items.push(item);
-    });
-    saveData = true;
+    try {
+      const payload = await parseMango(body, date);
+      payload.forEach((item) => {
+        items.push(item);
+      });
+      saveData = true;
+    } catch (error) {
+      console.log(error);
+    }
   } else if (
     subject
       .toLowerCase()
@@ -1604,29 +1644,41 @@ const parseData = async (
     ) {
       console.log('Arket', subject, date);
       // Arket
-      const payload = await parseArket(body, date);
-      payload.forEach((item) => {
-        items.push(item);
-      });
-      saveData = true;
+      try {
+        const payload = await parseArket(body, date);
+        payload.forEach((item) => {
+          items.push(item);
+        });
+        saveData = true;
+      } catch (error) {
+        console.log(error);
+      }
     } else if (
       body.toLowerCase().includes('thank you for shopping at weekday')
     ) {
       console.log('Weekday', subject, date);
       // Weekday
-      const payload = await parseWeekday(body, date);
-      payload.forEach((item) => {
-        items.push(item);
-      });
-      saveData = true;
+      try {
+        const payload = await parseWeekday(body, date);
+        payload.forEach((item) => {
+          items.push(item);
+        });
+        saveData = true;
+      } catch (error) {
+        console.log(error);
+      }
     } else if (body.toLowerCase().includes('river island')) {
       console.log('River Island', subject, date);
       // River Island
-      const payload = await parseRiverIsland(body, date);
-      payload.forEach((item) => {
-        items.push(item);
-      });
-      saveData = true;
+      try {
+        const payload = await parseRiverIsland(body, date);
+        payload.forEach((item) => {
+          items.push(item);
+        });
+        saveData = true;
+      } catch (error) {
+        console.log(error);
+      }
     } else if (subject.toLowerCase().includes('HouseofCB'.toLowerCase())) {
       // House of CB
       console.log('House of CB', subject, date);
@@ -1669,21 +1721,29 @@ const parseData = async (
   ) {
     //Mango
     console.log('Mango', subject, date);
-    const payload = await parseMango(body, date);
-    payload.forEach((item) => {
-      items.push(item);
-    });
-    saveData = true;
+    try {
+      const payload = await parseMango(body, date);
+      payload.forEach((item) => {
+        items.push(item);
+      });
+      saveData = true;
+    } catch (error) {
+      console.log(error);
+    }
   } else if (
     subject.toLowerCase().includes('Thank you for your purchase'.toLowerCase())
   ) {
     //ZARA
     console.log('Zara', subject, date);
-    const payload = await parseZara(body, date);
-    payload.forEach((item) => {
-      items.push(item);
-    });
-    saveData = true;
+    try {
+      const payload = await parseZara(body, date);
+      payload.forEach((item) => {
+        items.push(item);
+      });
+      saveData = true;
+    } catch (error) {
+      console.log(error);
+    }
   } else if (
     subject.toLowerCase().includes('We got your order!'.toLowerCase())
   ) {
@@ -1722,8 +1782,6 @@ const parseData = async (
     }
   }
 };
-
-let totalFound = 0;
 
 async function saveProducts(items: Product[], sender) {
   let new_items = 0;
@@ -1771,14 +1829,17 @@ async function saveProducts(items: Product[], sender) {
   );
 
   totalFound += new_items;
-  await storageSet(config.keys.receiptsCount, totalFound);
-  const allProducts = (await storageGet<Product[]>(config.keys.products)) ?? [];
-  await storageSet(config.keys.products, allProducts.concat(newProducts));
-  chrome.runtime.sendMessage(
-    new ExtensionMessage(
-      config.keys.productsSaved,
-      { success: true, data: totalFound },
-      sender.id
-    )
-  );
+  try {
+    await storageSet(config.keys.receiptsCount, totalFound);
+    await storageSet(config.keys.products, products.concat(newProducts));
+    chrome.runtime.sendMessage(
+      new ExtensionMessage(config.keys.productsSaved, {
+        success: true,
+        data: totalFound,
+        sender: sender.id,
+      })
+    );
+  } catch (error) {
+    console.log('£ hmmm:', error);
+  }
 }
