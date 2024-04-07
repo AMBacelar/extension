@@ -14,14 +14,30 @@ import { Product } from "utils/calculateSize";
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+function useStateWithCallback<T>(initialValue: T): [T, (setter: T, callback?: (prev: T, next: T) => void) => void] {
+  const [value, setValue] = useState<T>(initialValue);
+
+  const setValueAndCallback = (newValue: T, callback?: (prev: T, next: T) => void) => {
+    setValue(prevValue => {
+      if (callback) {
+        callback(prevValue, newValue);
+      }
+      return newValue;
+    });
+  };
+
+  return [value, setValueAndCallback];
+}
+
+export { useStateWithCallback };
+
 const screens = ['signIn', 'firstTimeUser', 'loadingEmails', 'startShopping', 'returningUser'] as const;
 type Screen = typeof screens[number];
 export default function Popup(): JSX.Element {
   const [screen, setScreen] = useState<Screen>('signIn');
   const [name, setName] = useState<string>();
   const [isFirstTimeUser, setIsFirstTimeUser] = useState<boolean>(true);
-  const [productsFound, setProductsFound] = useState<number>(0);
-  const [toastValue, setToastValue] = useState<number>(34);
+  const [productsFound, setProductsFound] = useStateWithCallback<number>(0);
 
   const calledOnce = useRef(false);
 
@@ -119,11 +135,14 @@ export default function Popup(): JSX.Element {
         new ExtensionMessage(config.keys.loadMessages)
       ).then((): void => {
         if (isFirstTimeUser) {
-          setProductsFound(0);
+          setProductsFound(0, (prev) => {
+            toast(`${prev} products found`);
+          });
           setScreen('startShopping')
         } else {
-          setProductsFound(0);
-          toast('search complete');
+          setProductsFound(0, (prev) => {
+            toast(`${prev} products found`);
+          });
           setScreen('returningUser')
         }
       })
