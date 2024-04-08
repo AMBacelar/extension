@@ -216,6 +216,42 @@ export const loadUserData = async (
               variables[instruction.name] = false;
             }
           }
+          if (instruction.type === 'getElementTextContentComplex') {
+            let element = document.querySelector('body');
+            for (let index = 0; index < instruction.selector.length; index++) {
+              const selector = instruction.selector[index];
+              if (selector.shadow) {
+                if (selector.index) {
+                  element = element.shadowRoot.querySelectorAll(
+                    selector.selector
+                  )[selector.index];
+                } else {
+                  element = element.shadowRoot.querySelector(selector.selector);
+                }
+              } else {
+                if (selector.index) {
+                  element = element.querySelectorAll(selector.selector)[
+                    selector.index
+                  ];
+                } else {
+                  element = element.querySelector(selector.selector);
+                }
+              }
+            }
+
+            if (typeof element != 'undefined' && element != null) {
+              variables[instruction.name] = element.textContent.trim();
+
+              if (instruction.name === 'product-title') {
+                const category = getCategory(element.textContent);
+                if (category) {
+                  variables['category'] = category;
+                }
+              }
+            } else {
+              variables[instruction.name] = false;
+            }
+          }
           if (instruction.type === 'clickOnElement') {
             const element = document.querySelector(instruction.selector);
             if (typeof element != 'undefined' && element != null) {
@@ -233,6 +269,38 @@ export const loadUserData = async (
                 element = element.shadowRoot.querySelector(selector.selector);
               } else {
                 element = element.querySelector(selector.selector);
+              }
+            }
+
+            if (typeof element != 'undefined' && element != null) {
+              element.click();
+              await forSeconds(instruction.waitFor);
+            } else {
+              variables[instruction.name] = false;
+            }
+          }
+          if (instruction.type === 'clickOnElementComplex') {
+            let element = document.querySelector('body');
+            for (let index = 0; index < instruction.selector.length; index++) {
+              const selector = instruction.selector[index];
+              if (selector.shadow) {
+                if (selector.index) {
+                  element = element.shadowRoot.querySelectorAll(
+                    selector.selector
+                  )[selector.index];
+                } else {
+                  element = element.shadowRoot.querySelector(selector.selector);
+                }
+              } else {
+                if (selector.index) {
+                  element = element.querySelectorAll(selector.selector)[
+                    selector.index
+                  ];
+                  console.log(element);
+                } else {
+                  console.log(element);
+                  element = element.querySelector(selector.selector);
+                }
               }
             }
 

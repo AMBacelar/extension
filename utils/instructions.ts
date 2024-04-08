@@ -6,8 +6,10 @@ export const InstructionType = {
   doesElementExistShadowRoot: 'doesElementExistShadowRoot',
   getElementTextContent: 'getElementTextContent',
   getElementTextContentShadowRoot: 'getElementTextContentShadowRoot',
+  getElementTextContentComplex: 'getElementTextContentComplex',
   clickOnElement: 'clickOnElement',
   ClickOnElementShadowRoot: 'ClickOnElementShadowRoot',
+  ClickOnElementComplex: 'clickOnElementComplex',
   getMaterialFromStoredVariable: 'getMaterialFromStoredVariable',
   runLibraryFunctionOnStoredVariable: 'runLibraryFunctionOnStoredVariable',
   searchForSpecificNode: 'searchForSpecificNode',
@@ -35,6 +37,17 @@ type ShadowSelector = { shadow: boolean; selector: string };
 type GetElementTextContentShadowRoot = InstructionCore & {
   selector: ShadowSelector[];
   type: 'getElementTextContentShadowRoot';
+};
+
+type ComplexSelector = ShadowSelector & { index?: number };
+type GetElementTextContentComplex = InstructionCore & {
+  selector: ComplexSelector[];
+  type: 'getElementTextContentComplex';
+};
+
+type ClickOnElementComplex = InstructionCore & {
+  selector: ComplexSelector[];
+  type: 'clickOnElementComplex';
 };
 
 type DoesElementExist = InstructionCore & {
@@ -103,10 +116,12 @@ export type Instruction =
   | WaitForSeconds
   | GetElementTextContent
   | GetElementTextContentShadowRoot
+  | GetElementTextContentComplex
   | DoesElementExist
   | DoesElementExistShadowRoot
   | ClickOnElement
   | ClickOnElementShadowRoot
+  | ClickOnElementComplex
   | GetMaterialFromStoredVariable
   | RunLibraryFunctionOnStoredVariable
   | SearchForSpecificNode

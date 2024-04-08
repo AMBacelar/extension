@@ -37,6 +37,7 @@ const App = () => {
 
   useEffect(() => {
     setLoaded(false);
+    efitterBot = undefined;
     if (instructions) {
       console.log(instructions)
       checkPage(instructions.toCheckPage)
@@ -58,29 +59,31 @@ const App = () => {
 
   const setupEfitterBot = useCallback(async (current_size: LegalSize, material: string, products_length: number, user_email: string,) => {
     let attemptsRemaining = 10;
-    try {
-      efitterBot = new Bot(
-        current_size,
-        material,
-        products_length,
-        user_email
-      );
-      await forSeconds(1);
-      console.log('$$$ just checking', efitterBot);
-      await efitterBot.init();
-      setOpen(true);
-    } catch (ex) {
-      console.log(ex + '!!!!');
-      if (attemptsRemaining > 0) {
-        attemptsRemaining--;
-        setTimeout(() => setupEfitterBot(
+    if (efitterBot === undefined) {
+      try {
+        efitterBot = new Bot(
           current_size,
           material,
           products_length,
           user_email
-        ), 500);
-      }
+        );
+        await forSeconds(1);
+        console.log('$$$ just checking', efitterBot);
+        await efitterBot.init();
+        setOpen(true);
+      } catch (ex) {
+        console.log(ex + '!!!!');
+        if (attemptsRemaining > 0) {
+          attemptsRemaining--;
+          setTimeout(() => setupEfitterBot(
+            current_size,
+            material,
+            products_length,
+            user_email
+          ), 500);
+        }
 
+      }
     }
   }, []);
 
