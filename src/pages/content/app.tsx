@@ -6,7 +6,7 @@ import { LegalSize } from "../../../utils/size";
 import { InstructionsResponse } from "../../../utils/instructions";
 import { forSeconds } from "../../../utils/misc";
 import { checkPage, loadUserData } from "./executeInstructions";
-import { Product } from "utils/calculateSize";
+import detectUrlChange from '../../../utils/detect-url-change';
 
 let efitterBot;
 
@@ -24,28 +24,19 @@ const App = () => {
     }
   });
   const [loaded, setLoaded] = useState(false);
+  const [urlChanges, setUrlChanges] = useState<number>(0);
 
   useEffect(() => {
-    console.log('setting up event listeners');
-    const handleNewUrl = (event) => console.log('url changed', event);
-    const handleNewUrl2 = (message) => {
-      if (message.context === 'DOMReloaded') {
-        console.log('url changed', window.location.href)
-      }
-    };
-    window.addEventListener('popstate', handleNewUrl);
-    chrome.runtime.onMessage.addListener(handleNewUrl2);
+    detectUrlChange.on('change', (newUrl) => {
+      setUrlChanges(curr => curr + 1);
+    });
     return () => {
-      window.removeEventListener('popstate', handleNewUrl);
-      chrome.runtime.onMessage.removeListener(handleNewUrl2);
+      detectUrlChange.removeAllListeners();
     }
   }, []);
 
   useEffect(() => {
-    console.log('run it all again!');
-  }, [window.location.href]);
-
-  useEffect(() => {
+    setLoaded(false);
     if (instructions) {
       console.log(instructions)
       checkPage(instructions.toCheckPage)
@@ -63,7 +54,7 @@ const App = () => {
         })
         .catch(err => console.log('2', err))
     }
-  }, [instructions]);
+  }, [instructions, urlChanges]);
 
   const setupEfitterBot = useCallback(async (current_size: LegalSize, material: string, products_length: number, user_email: string,) => {
     let attemptsRemaining = 10;

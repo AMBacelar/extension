@@ -8,9 +8,6 @@ const packages = [
   {
     content: resolve(__dirname, '../../', 'src/pages/content/index.tsx'),
   },
-  {
-    site: resolve(__dirname, '../../', 'src/pages/content/content-script.ts'),
-  },
 ];
 
 const outDir = resolve(__dirname, '../../', outputFolderName);

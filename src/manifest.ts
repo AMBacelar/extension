@@ -34,7 +34,7 @@ const manifest: Manifest.WebExtensionManifest & { oauth2: any; key?: string } =
     content_scripts: [
       {
         matches: ['<all_urls>'],
-        js: ['src/pages/content/index.js', 'src/pages/site/index.js'],
+        js: ['src/pages/content/index.js'],
         css: ['contentStyle.css'],
         run_at: 'document_end',
       },

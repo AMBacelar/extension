@@ -541,7 +541,7 @@ const parseRiverIsland = async (body: string, date: string) => {
         const line = lines[index];
         if (line.includes('Size:')) {
           items.push({
-            name: lines[index - 2].trim(),
+            name: lines[index - 2].replaceAll('|', '').trim(),
             size: line
               .replace('Size:', '')
               .replace('(UK)', '')

@@ -8,7 +8,6 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   let div, body, itemsIndex, orderIndex, startIndex;
   switch (request.context) {
     case 'getTextContentHelper':
-
       body = request.payload;
       div = document.createElement('div');
       div.innerHTML = body;

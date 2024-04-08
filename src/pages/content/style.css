@@ -44,7 +44,7 @@
 }
 
 .efitter-root {
-  z-index: 500;
+  z-index: 99999;
   position: relative;
 }
 

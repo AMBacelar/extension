@@ -120,11 +120,15 @@ export const matcharacteristic = [
 
 export const getMaterialsFromString = (inputString: string) => {
   const mat = new Set();
-  matcharacteristic.forEach((material) => {
-    if (inputString.toLowerCase().includes(material.Name.toLowerCase())) {
-      mat.add(material.Name);
-    }
-  });
+  try {
+    matcharacteristic.forEach((material) => {
+      if (inputString.toLowerCase().includes(material.Name.toLowerCase())) {
+        mat.add(material.Name);
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
   const hasLyocell = mat.has('Lyocell');
   const hasTencel = mat.has('Tencel');
   if (hasLyocell && hasTencel) {
