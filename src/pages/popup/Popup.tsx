@@ -15,13 +15,15 @@ import { Bounce, ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useStateWithCallback } from "../../../utils/use-state-with-callback";
 
-const screens = ['signIn', 'firstTimeUser', 'loadingEmails', 'startShopping', 'returningUser'] as const;
+const screens = ['signIn', 'firstTimeUser', 'loadingEmails', 'startShopping'] as const;
 type Screen = typeof screens[number];
 export default function Popup(): JSX.Element {
-  const [screen, setScreen] = useState<Screen>('signIn');
+  const [screen, setScreen] = useState<Screen>();
   const [name, setName] = useState<string>();
   const [isFirstTimeUser, setIsFirstTimeUser] = useState<boolean>(true);
   const [productsFound, setProductsFound] = useStateWithCallback<number>(0);
+  const [totalMessages, setTotalMessages] = useState<number>(0);
+  const [messagesProcessed, setMessagesProcessed] = useState<number>(0);
 
   const calledOnce = useRef(false);
 
@@ -35,6 +37,12 @@ export default function Popup(): JSX.Element {
     switch (request.context) {
       case config.keys.productsSaved:
         setProductsFound(request.data.data);
+        break;
+      case 'getTotalMessages':
+        setTotalMessages(request.data.data);
+        break;
+      case 'getMessagesProcessed':
+        setMessagesProcessed(request.data.data);
         break;
       case 'getTextContentHelper':
         body = request.payload;
@@ -91,7 +99,7 @@ export default function Popup(): JSX.Element {
               console.log('products:', products)
               if (products && products.length > 0) {
                 setIsFirstTimeUser(false);
-                setScreen('returningUser');
+                setScreen('startShopping');
               } else {
                 setScreen('firstTimeUser');
               }
@@ -118,17 +126,12 @@ export default function Popup(): JSX.Element {
       requestBackground(
         new ExtensionMessage(config.keys.loadMessages)
       ).then((): void => {
-        if (isFirstTimeUser) {
-          setProductsFound(0, (prev) => {
-            toast(`${prev} products found`);
-          });
-          setScreen('startShopping')
-        } else {
-          setProductsFound(0, (prev) => {
-            toast(`${prev} products found`);
-          });
-          setScreen('returningUser')
-        }
+        setProductsFound(0, (prev) => {
+          toast(`${prev} products found`);
+        });
+        setMessagesProcessed(0);
+        setTotalMessages(0);
+        setScreen('startShopping')
       })
     }
   }, [screen]);
@@ -149,6 +152,16 @@ export default function Popup(): JSX.Element {
 
   const handleLoadEmails = async () => {
     setScreen('loadingEmails');
+  }
+
+  const Footer = () => {
+    return (
+      <div className="h-[90px] py-7 px-8 flex items-center border-t-2 justify-between">
+        <a className="py-3 px-[30px] border-2 text-[#712E49] border-[#712E49] rounded-lg text-[14px]" href="https://www.efitterapp.com/how-it-works"
+          target="_blank" rel="noreferrer">How it works</a>
+        <button className="text-[#712E49] underline text-[14px]" onClick={handleLogout}>Log out</button>
+      </div>
+    )
   }
 
   const SignIn = () => (
@@ -178,85 +191,70 @@ export default function Popup(): JSX.Element {
     </>)
 
   const FirstTimeUser = () => (
-    <>
+    <div className="flex flex-col justify-between h-full">
       <header className="flex flex-col items-center justify-center text-black">
         <img
           src={logo}
           className="h-[56px] pointer-events-none mt-[59px] mb-0"
           alt="logo"
         />
-        <h1 className="mt-[26px] text-[56px]">Hello, {name}</h1>
-        <p className="text-[15px]">efitter uses your past orders to predict your size.<br />
-          To get started, click “load your emails”</p>
-        <button className="mt-[76px] py-3 px-10 text-[#712E49] bg-[#FFD9E3] rounded-lg" onClick={handleLoadEmails}>Load your email</button>
-        <a className="py-3 mt-6 px-[30px] border text-[#712E49] border-[#712E49] rounded-lg" href="https://www.efitterapp.com/how-it-works"
-          target="_blank" rel="noreferrer">How it works</a>
-        <button className="mt-[76px] text-[#712E49] underline" onClick={handleLogout}>Log out</button>
+        <h1 className="mt-[56px] text-[56px]">Hey {name}</h1>
+        <p className="text-[15px] my-[39px]">efitter uses your past orders to predict your size.<br />
+          To get started, click “Load your emails”</p>
+        <button className="py-3 px-10 text-[#712E49] bg-[#FFD9E3] rounded-lg" onClick={handleLoadEmails}>Load your email</button>
       </header>
-    </>
+      <Footer />
+    </div>
   )
 
   const LoadingEmails = () => {
     return (
-      <>
+      <div className="flex flex-col justify-between h-full">
         <header className="flex flex-col items-center justify-center text-black">
           <img
             src={logo}
             className="h-[56px] pointer-events-none mt-[59px] mb-0"
             alt="logo"
           />
-          <h1 className="mt-[26px] text-[56px]">Hello, {name}</h1>
-          <p className="text-[15px]">Give us a sec, searching for items...</p>
-          <div className="my-10 h-[114px]">
-            <img
-              src={loader}
-              className="h-[114px] pointer-events-none"
-              alt="logo"
-            />
-            <p className="text-[16.6px] mt-[-69px]">{productsFound}</p>
-          </div>
-          <a href="https://www.efitterapp.com/how-it-works"
-            className="py-3 px-10 text-[#712E49] bg-[#FFD9E3] rounded-lg"
-            target="_blank" rel="noreferrer">How it works</a>
-          <button className="mt-[50px] text-[#712E49] text-[16px] underline" onClick={handleLogout}>Log out</button>
+          <h1 className="mt-[50px] text-[56px] leading-none">We&apos;re loading<br />your emails</h1>
+          <p className="text-[15px] mt-10">Please give us a sec, searching for items...</p>
+          {!!totalMessages && (
+            <>
+              <div className="w-[272px] h-[10px] bg-[#E9E9E9] rounded-full mt-10">
+                <div style={{ width: `${(messagesProcessed / totalMessages) * 100}%` }} className="h-full bg-[#712E49] rounded-full"></div>
+              </div>
+              <p className="text-[12px] text-[#712E49] mt-3">{`${Math.floor((messagesProcessed / totalMessages) * 100)}%`} completed</p>
+              <p className="text-[12px] text-[#712E49]">{productsFound} products found</p></>
+          )}
         </header>
-      </>
+        <Footer />
+      </div>
     )
   }
 
   const StartShopping = () => (
-    <>
+    <div className="flex flex-col justify-between h-full">
       <header className="flex flex-col items-center justify-center text-black">
         <img
           src={logo}
           className="h-[56px] pointer-events-none mt-[59px] mb-0"
           alt="logo"
         />
-        <h1 className="mt-[26px] text-[56px]">Hello, {name}</h1>
-        <p className="text-[15px]">Now you&#39;re ready to shop!</p>
-        <p className="mt-[5px] text-[15px]">Start shopping at your favorite brands including</p>
-        <div className="flex items-center mt-[44px] gap-8">
-          <a href="https://www.houseofcb.com/" target="_blank" rel="noreferrer"><img className="w-[121px] h-[35px]" src={houseOfCb} /></a>
-          <a href="https://www.zara.com/uk/" target="_blank" rel="noreferrer"><img className="w-[86px] h-[32px]" src={zara} /></a>
-          <a
-            href="https://www.asos.com/women/a-to-z-of-brands/asos-collection/cat/?cid=4877&nlid=ww|brands|top+brands|asos+brands"
-            target="_blank" rel="noreferrer"
-          ><img className="9-[35px] h-[38px]" src={asos} /></a>
+        <h1 className="my-[39px] text-[56px]">Shop with efitter</h1>
+        <p className="text-[15px]">We have found your recent order confirmations.<br />Start shopping with efitter at your favourite brands!</p>
+        <div className="flex items-center justify-center gap-4">
+          <a href="https://www.efitterapp.com/brand-directory"
+            className="mt-[28px] py-2 px-6 text-[#712E49] bg-[#FFD9E3] rounded-lg"
+            target="_blank" rel="noreferrer">Browse our brand directory</a>
+          <button className="mt-[28px] py-2 px-8 border-2 border-[#712E49] text-[#712E49] rounded-lg" onClick={handleLoadEmails}>Reload my emails</button>
         </div>
-        <a href="https://www.efitterapp.com/brand-directory"
-          className="mt-[29px] text-[#712E49] underline"
-          target="_blank" rel="noreferrer">Browse our brand directory</a>
-        <button className="mt-[28px] py-3 px-10 text-[#712E49] bg-[#FFD9E3] rounded-lg" onClick={handleLoadEmails}>Load more emails</button>
-        <a href="https://www.efitterapp.com/how-it-works"
-          className="py-3 mt-6 px-[30px] border text-[#712E49] border-[#712E49] rounded-lg"
-          target="_blank" rel="noreferrer">How it works</a>
-        <button className="mt-[20px] text-[#712E49] underline" onClick={handleLogout}>Log out</button>
       </header>
-    </>
+      <Footer />
+    </div>
   )
 
   const ReturningUser = () => (
-    <>
+    <div className="flex flex-col justify-between h-full">
       <header className="flex flex-col items-center justify-center text-black">
         <img
           src={logo}
@@ -265,25 +263,13 @@ export default function Popup(): JSX.Element {
         />
         <h1 className="mt-[26px] text-[56px]">Hello, {name}</h1>
         <p className="text-[15px]">You&#39;re ready to shop!</p>
-        <p className="mt-[5px] text-[15px]">Click any of the brands below to start shopping</p>
-        <div className="flex items-center mt-[44px] gap-8">
-          <a href="https://www.houseofcb.com/" target="_blank" rel="noreferrer"><img className="w-[121px] h-[35px]" src={houseOfCb} /></a>
-          <a href="https://www.zara.com/uk/" target="_blank" rel="noreferrer"><img className="w-[86px] h-[32px]" src={zara} /></a>
-          <a
-            href="https://www.asos.com/women/a-to-z-of-brands/asos-collection/cat/?cid=4877&nlid=ww|brands|top+brands|asos+brands"
-            target="_blank" rel="noreferrer"
-          ><img className="9-[35px] h-[38px]" src={asos} /></a>
-        </div>
         <a href="https://www.efitterapp.com/brand-directory"
           className="mt-[29px] text-[#712E49] underline"
           target="_blank" rel="noreferrer">Browse our brand directory</a>
         <button className="mt-[28px] py-3 px-10 text-[#712E49] bg-[#FFD9E3] rounded-lg" onClick={handleLoadEmails}>Load more emails</button>
-        <a href="https://www.efitterapp.com/how-it-works"
-          className="py-3 mt-6 px-[30px] border text-[#712E49] border-[#712E49] rounded-lg"
-          target="_blank" rel="noreferrer">How it works</a>
-        <button className="mt-[20px] text-[#712E49] underline" onClick={handleLogout}>Log out</button>
       </header>
-    </>
+      <Footer />
+    </div>
   )
 
   return (
@@ -292,7 +278,7 @@ export default function Popup(): JSX.Element {
       {screen === 'firstTimeUser' && <FirstTimeUser />}
       {screen === 'loadingEmails' && <LoadingEmails />}
       {screen === 'startShopping' && <StartShopping />}
-      {screen === 'returningUser' && <ReturningUser />}
+      {/* {screen === 'returningUser' && <ReturningUser />} */}
       <ToastContainer />
     </div>
   );

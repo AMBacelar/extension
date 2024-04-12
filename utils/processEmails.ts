@@ -9,6 +9,7 @@ function htmlToText(str: string) {
 }
 
 let totalFound = 0;
+let totalChecked = 0;
 type Entry = { id: string; threadId: string };
 const processAllMessages = async (entries: Entry[], sender) => {
   return new Promise<void>((resolve) => {
@@ -20,6 +21,7 @@ const processAllMessages = async (entries: Entry[], sender) => {
 
     Promise.allSettled(flowPromises).then((result) => {
       totalFound = 0;
+      totalChecked = 0;
       resolve();
     });
   });
@@ -99,12 +101,28 @@ const processFewMessages = async (flow: Entry[], sender) => {
     } catch (ex) {
       console.log('$$', ex);
       continue;
+    } finally {
+      chrome.runtime.sendMessage(
+        new ExtensionMessage('getMessagesProcessed', {
+          success: true,
+          data: ++totalChecked,
+          sender: sender.id,
+        })
+      );
     }
   }
 };
 
 export const loadMessages = async (message, sender) => {
   const messages = await OAUTH.request.getMessages();
+  console.log('^^& total messages:', messages.length);
+  chrome.runtime.sendMessage(
+    new ExtensionMessage('getTotalMessages', {
+      success: true,
+      data: messages.length,
+      sender: sender.id,
+    })
+  );
   return await processAllMessages(messages, sender);
 };
 
@@ -835,56 +853,33 @@ const parseData = async (
     saveData = true;
   };
   const parseISawFirst = () => {
-    let formattedLines = htmlToText(body).trim();
+    let formattedLines = htmlToText(body).toLowerCase().trim();
     formattedLines = formattedLines.substring(
-      formattedLines.lastIndexOf('ORDER DETAILS' + 13),
-      formattedLines.lastIndexOf('Subtotal')
+      formattedLines.lastIndexOf('order summary'),
+      formattedLines.lastIndexOf('delivery')
     );
 
-    formattedLines = formattedLines.split('Quantity:');
+    console.log('^^*', formattedLines);
 
-    formattedLines.forEach((itemBlock) => {
-      let name = null;
-      let size = null;
-      let lines = itemBlock.split(/\n/g);
-      lines = lines.reduce<string[]>((lines, line) => {
-        if (line.trim() !== '') {
-          lines.push(line.trim());
-        }
-        return lines;
-      }, []);
-
-      // get name
-
-      for (let index = 0; index < lines.length; index++) {
-        const potentialItemName = lines[index];
-        for (const category in config.categories) {
-          if (Object.hasOwnProperty.call(config.categories, category)) {
-            const clothingCategory = config.categories[category];
-            for (const keyword in clothingCategory.keywords) {
-              if (
-                Object.hasOwnProperty.call(clothingCategory.keywords, keyword)
-              ) {
-                const key = clothingCategory.keywords[keyword];
-                if (
-                  potentialItemName.toLowerCase().includes(key.toLowerCase())
-                ) {
-                  name = potentialItemName;
-                }
-              }
-            }
-          }
-        }
+    let lines = formattedLines.split(/\n| {2}/g);
+    lines = lines.reduce<string[]>((lines, line) => {
+      const cleanLine = line.replaceAll('|', '').replaceAll('-', '').trim();
+      if (cleanLine !== '') {
+        lines.push(cleanLine);
       }
+      return lines;
+    }, []);
 
-      // get size
-      size = lines.filter((line) => line.includes('Size:'));
-      if (size.length > 0) {
-        size = size[0].replace('Size:', '').trim();
-      } else {
-        size = null;
-      }
-      if (!!size && !!name) {
+    console.log('^^*', lines);
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.toLowerCase().includes('product code:')) {
+        const name = lines[i - 1];
+        const size = lines[i - 1].substring(
+          lines[i - 1].indexOf('(') + 1,
+          lines[i - 1].indexOf(')')
+        );
         items.push({
           name,
           size,
@@ -892,7 +887,7 @@ const parseData = async (
           date: date,
         });
       }
-    });
+    }
 
     saveData = true;
   };
@@ -1443,7 +1438,7 @@ const parseData = async (
     let formattedLines = htmlToText(body).trim();
     formattedLines = formattedLines.substring(
       formattedLines.lastIndexOf('Qty') + 5,
-      formattedLines.lastIndexOf('Returns')
+      formattedLines.lastIndexOf('RETURNS')
     );
 
     let lines = [];
@@ -1626,7 +1621,7 @@ const parseData = async (
   } else if (
     subject
       .toLowerCase()
-      .includes('Your I SAW IT FIRST Order Confirmation'.toLowerCase())
+      .includes('I Saw It First | Order Confirmation'.toLowerCase())
   ) {
     console.log('I saw it first', subject, date);
     // I SAW IT FIRST
