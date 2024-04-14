@@ -222,10 +222,11 @@ export class Bot {
         response.innerHTML = step.text;
       }
     }
-    this.insertNewChatItem(response);
+    await this.sleep(1000);
     this.showLoading();
     await this.sleep(1000);
     this.hideLoading();
+    this.insertNewChatItem(response);
 
     if (step.options) {
       const choices = document.createElement('div');
@@ -329,16 +330,11 @@ export class Bot {
     e.preventDefault();
     const choice = e.target;
 
-    this.showLoading();
-
     this.disableAllChoices();
 
     if (choice.dataset.payload === 'fetchPersona') {
       await this.refetchPersona(this.efitter_email);
-    } else {
-      await this.sleep(1000);
     }
-    this.hideLoading();
     this.printChoice(choice);
     this.scrollContainer();
     if (choice.dataset.next) {

@@ -243,6 +243,7 @@
   background-color: #712e49;
   margin-right: 0;
   margin-left: auto;
+  margin-bottom: 26px;
   border: transparent;
   color: white;
 }
@@ -252,7 +253,7 @@
   transform: translateY(-50%);
   transition: all 0.3s 0.3s;
   transition: opacity 0.3s 0.3s;
-  margin-top: 16px;
+  margin-top: 26px;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;

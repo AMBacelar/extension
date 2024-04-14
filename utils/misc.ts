@@ -37,10 +37,10 @@ export const forSeconds = (seconds: number) => {
  * @param cyclesCount - number of times to check for the element (default: 100)
  * @returns a promise that resolves to the element when it appears
  */
-export function elementAppear(
+export const elementAppear = (
   selector: string,
   cyclesCount = 100
-): Promise<Element> {
+): Promise<Element> => {
   let cycles = cyclesCount;
   return new Promise((resolve, reject) => {
     const id = setInterval(() => {
@@ -56,7 +56,7 @@ export function elementAppear(
       }
     }, 100);
   });
-}
+};
 
 export class ExtensionMessage {
   context: any;
@@ -67,7 +67,7 @@ export class ExtensionMessage {
   }
 }
 
-export const requestBackground = (request: ExtensionMessage) => {
+export const requestBackground = <T>(request: ExtensionMessage): Promise<T> => {
   return new Promise((resolve) => {
     const handler = ({ context, data }) => {
       if (context === request.context) {

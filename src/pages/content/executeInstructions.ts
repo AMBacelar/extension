@@ -175,7 +175,7 @@ export const loadUserData = async (
             await forSeconds(instruction.value);
           }
           if (instruction.type === 'getElementTextContent') {
-            const element = document.querySelector(instruction.selector);
+            const element = await elementAppear(instruction.selector);
             if (typeof element != 'undefined' && element != null) {
               variables[instruction.name] = element.textContent.trim();
               console.log(

@@ -36,6 +36,11 @@ chrome.runtime.onMessage.addListener((message, sender) => {
         console.log('called from here?');
         getProfileInfo(message);
         break;
+
+      case 'logout':
+        OAUTH.user.logOut();
+        break;
+
       default:
         console.log('$%^& we missed this one', message.context);
         break;

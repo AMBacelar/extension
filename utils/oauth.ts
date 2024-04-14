@@ -16,28 +16,29 @@ export const OAUTH = {
     },
     logOut: async () => {
       console.log('1');
-      chrome.identity.getAuthToken({ interactive: false }, (current_token) => {
-        console.log('2');
-        chrome.identity.removeCachedAuthToken(
-          { token: current_token as string },
-          () => {
-            /** */
-          }
-        );
-        console.log('3');
-        const xhr = new XMLHttpRequest();
-        xhr.open(
-          'GET',
-          'https://accounts.google.com/o/oauth2/revoke?token=' + current_token
-        );
+      chrome.identity.getAuthToken(
+        { interactive: false },
+        async (current_token) => {
+          console.log('2');
+          chrome.identity.removeCachedAuthToken(
+            { token: current_token as string },
+            () => {
+              /** */
+              console.log('3');
+            }
+          );
 
-        xhr.send();
-      });
+          fetch(
+            'https://accounts.google.com/o/oauth2/revoke?token=' + current_token
+          );
+          console.log('4');
 
-      await chrome.identity.clearAllCachedAuthTokens();
-      console.log('4');
-      await storageSet(OAUTH.user.info, '');
-      console.log('5');
+          await chrome.identity.clearAllCachedAuthTokens();
+          console.log('5');
+          await storageSet(OAUTH.user.info, '');
+          console.log('6');
+        }
+      );
     },
     profileUrl: 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json',
   },
@@ -55,7 +56,7 @@ export const OAUTH = {
           });
       });
     },
-    getMessages: async ():Promise<{ id: string; threadId: string }[]> => {
+    getMessages: async (): Promise<{ id: string; threadId: string }[]> => {
       return new Promise<{ id: string; threadId: string }[]>(
         async (resolve) => {
           const userInfo = await OAUTH.request.refreshUserInfo();
