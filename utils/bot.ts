@@ -104,6 +104,7 @@ export class Bot {
   products_length: number;
   persona_key!: PersonaKey;
   efitter_email: string;
+  efitter_avatar: string;
   efitterChat!: HTMLDivElement;
   container!: HTMLDivElement;
   inner!: HTMLDivElement;
@@ -122,12 +123,14 @@ export class Bot {
     size: LegalSize,
     material: string,
     products_length: number,
-    efitter_email: string
+    efitter_email: string,
+    efitter_avatar: string
   ) {
     this.size = size;
     this.material = material;
     this.products_length = products_length;
     this.efitter_email = efitter_email;
+    this.efitter_avatar = efitter_avatar;
 
     const { chatFlow, chatVariables } = this.generateChat();
     this.chatFlow = chatFlow;
@@ -233,6 +236,8 @@ export class Bot {
       choices.classList.add('efitter-choices');
       choices.innerHTML =
         '<div class="efitter-choice-text">CHOOSE AN OPTION</div>';
+      await this.sleep(1000);
+      this.insertNewChatItem(choices);
       step.options.forEach((option) => {
         const button = document.createElement('button');
         button.classList.add('efitter-choice');
@@ -241,7 +246,6 @@ export class Bot {
         button.dataset.payload = option.payload;
         choices.appendChild(button);
       });
-      this.insertNewChatItem(choices);
     } else if (step.next) {
       this.printResponse(this.chatFlow[step.next]);
     }
@@ -368,6 +372,11 @@ export class Bot {
     this.container = document.getElementById('efitter-chat-container');
     this.inner = document.getElementById('efitter-chat-inner');
     this.container.addEventListener('click', this.handleChoice.bind(this));
+
+    document.documentElement.style.setProperty(
+      '--user-avatar-url',
+      `url(${this.efitter_avatar})`
+    );
 
     await this.refetchPersona(this.efitter_email);
     this.startConversation();

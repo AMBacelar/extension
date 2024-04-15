@@ -8,7 +8,7 @@ import { forSeconds } from "../../../utils/misc";
 import { checkPage, loadUserData } from "./executeInstructions";
 import detectUrlChange from '../../../utils/detect-url-change';
 
-let efitterBot;
+let efitterBot: Bot | undefined;
 
 const App = () => {
   const [open, setOpen] = useState(false);
@@ -46,7 +46,7 @@ const App = () => {
             loadUserData(instructions.toLoadUserData, instructions.brand)
               .then(res => {
                 console.log('done, 3', res);
-                handlePageParse(res.current_size, res.material, res.efitter_products, res.efitter_email);
+                handlePageParse(res.current_size, res.material, res.efitter_products, res.efitter_email, res.efitter_avatar);
               })
               .catch(err => {
                 console.log('oops', err);
@@ -57,7 +57,7 @@ const App = () => {
     }
   }, [instructions, urlChanges]);
 
-  const setupEfitterBot = useCallback(async (current_size: LegalSize, material: string, products_length: number, user_email: string,) => {
+  const setupEfitterBot = useCallback(async (current_size: LegalSize, material: string, products_length: number, user_email: string, efitter_avatar: string) => {
     let attemptsRemaining = 10;
     if (efitterBot === undefined) {
       try {
@@ -65,7 +65,8 @@ const App = () => {
           current_size,
           material,
           products_length,
-          user_email
+          user_email,
+          efitter_avatar
         );
         await forSeconds(1);
         console.log('$$$ just checking', efitterBot);
@@ -79,21 +80,21 @@ const App = () => {
             current_size,
             material,
             products_length,
-            user_email
+            user_email,
+            efitter_avatar
           ), 500);
         }
-
       }
     }
   }, []);
 
-  const handlePageParse = useCallback(async (current_size: LegalSize, material: string, efitter_products: any[], efitter_email: string) => {
+  const handlePageParse = useCallback(async (current_size: LegalSize, material: string, efitter_products: any[], efitter_email: string, efitter_avatar: string) => {
     const today = new Date();
     const products = efitter_products.filter(
       (x: { date: string | number | Date; }) => Math.abs(today.getTime() - new Date(x.date).getTime()) / (1000 * 3600 * 24) / 30 <= 12
     );
     setLoaded(true);
-    setupEfitterBot(current_size, material, products.length, efitter_email);
+    setupEfitterBot(current_size, material, products.length, efitter_email, efitter_avatar);
   }, []);
 
   if (!instructions || (instructions.brand as string) === '') {

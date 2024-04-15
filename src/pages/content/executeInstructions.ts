@@ -10,6 +10,7 @@ import {
 import { Brand, config } from '../../../utils/config';
 import { Instruction, InstructionType } from '../../../utils/instructions';
 import { elementAppear, forSeconds, storageGet } from '../../../utils/misc';
+import { LegalSize } from '../../../utils/size';
 
 const functionLibrary = {
   HM_breadcrumbs: (breadcrumbs: unknown) => {
@@ -37,7 +38,7 @@ const functionLibrary = {
   },
 } as const;
 
-let profileInfo: { name?: string; email?: string };
+let profileInfo: { name?: string; email?: string; picture?: string };
 
 async function getProfileInfo() {
   profileInfo = await storageGet(config.keys.user);
@@ -147,13 +148,14 @@ export const loadUserData = async (
   brand: Brand
 ) => {
   return new Promise<{
-    current_size: string;
+    current_size: LegalSize;
     pastsize: string;
     material: string;
     efitter_name: string;
     efitter_products: Product[];
     efitter_styleGuru?: string;
     efitter_email: string;
+    efitter_avatar: string;
     efitter_productName: string | boolean;
     efitter_sizeFromPage: string | boolean;
     efitter_category: string | boolean;
@@ -387,6 +389,7 @@ export const loadUserData = async (
             (await storageGet(config.keys.styleGuruArchetype)) || '',
 
           efitter_email: profileInfo?.email || '',
+          efitter_avatar: profileInfo?.picture || '',
           efitter_productName: variables['product-title'],
           efitter_sizeFromPage: variables['size'],
           efitter_category: variables['category'],

@@ -3,6 +3,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --user-avatar-url: url('https://storage.googleapis.com/media.landbot.io/159487/channels/ES9MZRY60PPC1E6W4RJDCHQ47ZPAXQSR.png');
+}
+
 .langin {
   color: aliceblue;
 }
@@ -211,7 +216,7 @@
   line-height: 1.4;
   color: #ffd9e3;
   width: max-content;
-  max-width: 80%;
+  max-width: 77%;
   margin-bottom: 13px;
   font-size: 16px;
   font-family: 'DM Sans', sans-serif !important;
@@ -241,11 +246,24 @@
 }
 .efitter-chat-ask {
   background-color: #712e49;
-  margin-right: 0;
+  margin-right: 45px;
   margin-left: auto;
   margin-bottom: 26px;
   border: transparent;
   color: white;
+}
+.efitter-chat-ask:before {
+  display: block;
+  content: '';
+  width: 35px;
+  height: 35px;
+  position: absolute;
+  right: -45px;
+  bottom: 0;
+  background: var(--user-avatar-url);
+  background-repeat: no-repeat;
+  background-size: 100%;
+  border-radius: 100%;
 }
 .efitter-choices {
   color: #ffd9e3;
