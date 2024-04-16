@@ -363,7 +363,7 @@ function convertSize(
       sizeKey = productSize.match(/^-?\d+$/) ? 'N2' : 'N1';
       break;
     case config.brands.next:
-      sizeKey = productSize.match(/^-?\d+$/) ? 'O1' : 'O2';
+      sizeKey = productSize.match(/\d+/) ? 'O1' : 'O2';
       break;
     case config.brands.stradivarius:
       sizeKey = productSize.match(/^-?\d+$/) ? 'P2' : 'P1';

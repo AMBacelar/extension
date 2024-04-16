@@ -116,6 +116,26 @@ export const matcharacteristic = [
     Characteristic:
       'is soft and very warm. It has a little bit of stretch to it and it can be itchy if it is unlined.',
   },
+  {
+    Name: 'Elastomultiester',
+    Characteristic:
+      'is stretchy, strong, and keeps you dry, perfect for clothes that need to move with you and last a long time.',
+  },
+  {
+    Name: 'Georgette',
+    Characteristic:
+      'is a thin, lightweight fabric with a slightly rough texture, often used for making flowy and draping garments.',
+  },
+  {
+    Name: 'Twill',
+    Characteristic:
+      'is a sturdy fabric with a diagonal ribbed texture and is known for its durability and versatility.',
+  },
+  {
+    Name: 'Acetate',
+    Characteristic:
+      'is a smooth and lightweight fabric made from cellulose fibers, often used for linings in clothing or in garments with a silky finish.',
+  },
 ] as const;
 
 export const getMaterialsFromString = (inputString: string) => {
@@ -140,7 +160,6 @@ export const getMaterialsFromString = (inputString: string) => {
 export const getMaterialCharacteristic = (materials: string[]) => {
   let material = '';
   let materialCount = 0;
-
   try {
     const used_materials: string[] = [];
     materials.forEach((mat) => {

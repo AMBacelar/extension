@@ -8,13 +8,14 @@ export const InstructionType = {
   getElementTextContentShadowRoot: 'getElementTextContentShadowRoot',
   getElementTextContentComplex: 'getElementTextContentComplex',
   clickOnElement: 'clickOnElement',
-  ClickOnElementShadowRoot: 'ClickOnElementShadowRoot',
-  ClickOnElementComplex: 'clickOnElementComplex',
+  clickOnElementShadowRoot: 'clickOnElementShadowRoot',
+  clickOnElementComplex: 'clickOnElementComplex',
   getMaterialFromStoredVariable: 'getMaterialFromStoredVariable',
   runLibraryFunctionOnStoredVariable: 'runLibraryFunctionOnStoredVariable',
   searchForSpecificNode: 'searchForSpecificNode',
   getSpecificNodeByIndex: 'getSpecificNodeByIndex',
   runTextReplaceOnVariable: 'runTextReplaceOnVariable',
+  concatenateVariables: 'concatenateVariables',
   surrenderToNext: 'surrenderToNext',
 } as const;
 
@@ -112,6 +113,13 @@ type RunTextReplaceOnVariable = InstructionCore & {
   type: 'runTextReplaceOnVariable';
 };
 
+type ConcatenateVariables = InstructionCore & {
+  name: string;
+  a: string;
+  b: string;
+  type: 'concatenateVariables';
+};
+
 export type Instruction =
   | WaitForSeconds
   | GetElementTextContent
@@ -127,7 +135,8 @@ export type Instruction =
   | SearchForSpecificNode
   | GetSpecificNodeByIndex
   | surrenderToNext
-  | RunTextReplaceOnVariable;
+  | RunTextReplaceOnVariable
+  | ConcatenateVariables;
 
 export type InstructionsResponse = {
   toCheckPage: Instruction[];

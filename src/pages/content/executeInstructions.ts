@@ -56,6 +56,7 @@ export const checkPage = async (instructions: Instruction[]) => {
     const instruction = instructions[index];
     if (instruction.type === InstructionType.waitForSeconds) {
       await forSeconds(instruction.value);
+      continue;
     }
     if (instruction.type === InstructionType.getSpecificNodeByIndex) {
       const elementList = document.querySelectorAll(instruction.selector);
@@ -65,6 +66,7 @@ export const checkPage = async (instructions: Instruction[]) => {
       } else {
         variables[instruction.name] = false;
       }
+      continue;
     }
     if (instruction.type === InstructionType.doesElementExist) {
       const element = await elementAppear(instruction.selector);
@@ -73,6 +75,7 @@ export const checkPage = async (instructions: Instruction[]) => {
       } else {
         variables[instruction.name] = false;
       }
+      continue;
     }
     if (instruction.type === InstructionType.getElementTextContent) {
       try {
@@ -88,6 +91,7 @@ export const checkPage = async (instructions: Instruction[]) => {
       } catch {
         variables[instruction.name] = false;
       }
+      continue;
     }
     if (
       instruction.type === InstructionType.runLibraryFunctionOnStoredVariable
@@ -106,6 +110,7 @@ export const checkPage = async (instructions: Instruction[]) => {
       } else {
         variables[instruction.targetVariable] = false;
       }
+      continue;
     }
     if (instruction.type === InstructionType.surrenderToNext) {
       let data;
@@ -127,6 +132,7 @@ export const checkPage = async (instructions: Instruction[]) => {
       }
       variables['product-title'] = data.Styles[0].StyleName;
       variables['brand'] = data.Styles[0].Brand === 'Next' ? 'Next' : false;
+      continue;
     }
   }
   for (const key in variables) {
@@ -175,15 +181,12 @@ export const loadUserData = async (
           const instruction = instructions[index];
           if (instruction.type === 'waitForSeconds') {
             await forSeconds(instruction.value);
+            continue;
           }
           if (instruction.type === 'getElementTextContent') {
             const element = await elementAppear(instruction.selector);
             if (typeof element != 'undefined' && element != null) {
               variables[instruction.name] = element.textContent.trim();
-              console.log(
-                variables[instruction.name],
-                element.textContent.trim()
-              );
               if (instruction.name === 'product-title') {
                 const category = getCategory(element.textContent);
                 if (category) {
@@ -193,6 +196,7 @@ export const loadUserData = async (
             } else {
               variables[instruction.name] = false;
             }
+            continue;
           }
           if (instruction.type === 'getElementTextContentShadowRoot') {
             let element = document.querySelector('body');
@@ -217,6 +221,7 @@ export const loadUserData = async (
             } else {
               variables[instruction.name] = false;
             }
+            continue;
           }
           if (instruction.type === 'getElementTextContentComplex') {
             let element = document.querySelector('body');
@@ -253,6 +258,7 @@ export const loadUserData = async (
             } else {
               variables[instruction.name] = false;
             }
+            continue;
           }
           if (instruction.type === 'clickOnElement') {
             const element = document.querySelector(instruction.selector);
@@ -262,6 +268,7 @@ export const loadUserData = async (
             } else {
               variables[instruction.name] = false;
             }
+            continue;
           }
           if (instruction.type === 'ClickOnElementShadowRoot') {
             let element = document.querySelector('body');
@@ -280,6 +287,7 @@ export const loadUserData = async (
             } else {
               variables[instruction.name] = false;
             }
+            continue;
           }
           if (instruction.type === 'clickOnElementComplex') {
             let element = document.querySelector('body');
@@ -300,8 +308,8 @@ export const loadUserData = async (
                   ];
                   console.log(element);
                 } else {
-                  console.log(element);
                   element = element.querySelector(selector.selector);
+                  console.log(element);
                 }
               }
             }
@@ -312,11 +320,13 @@ export const loadUserData = async (
             } else {
               variables[instruction.name] = false;
             }
+            continue;
           }
           if (instruction.type === 'runLibraryFunctionOnStoredVariable') {
             variables[instruction.targetVariable] = functionLibrary[
               instruction.name
             ](variables[instruction.targetVariable]);
+            continue;
           }
           if (instruction.type === 'searchForSpecificNode') {
             const elementList = document.querySelectorAll(instruction.selector);
@@ -325,11 +335,13 @@ export const loadUserData = async (
                 variables[instruction.name] = elementList[i].textContent;
               }
             }
+            continue;
           }
           if (instruction.type === 'getSpecificNodeByIndex') {
             const elementList = document.querySelectorAll(instruction.selector);
             variables[instruction.name] =
               elementList[instruction.i].textContent;
+            continue;
           }
           if (instruction.type === 'runTextReplaceOnVariable') {
             variables[instruction.targetVariable] = variables[
@@ -337,11 +349,13 @@ export const loadUserData = async (
             ]
               .replace(instruction.search, instruction.target)
               .trim();
+            continue;
           }
           if (instruction.type === 'getMaterialFromStoredVariable') {
             variables['materials'] = getMaterialsFromString(
               variables[instruction.variable]
             );
+            continue;
           }
           if (instruction.type === 'surrenderToNext') {
             let data;
@@ -366,6 +380,14 @@ export const loadUserData = async (
               data.Styles[0].Fits[0].Items[0].Composition || target;
             variables['brand'] =
               data.Styles[0].Brand === 'Next' ? 'Next' : false;
+            continue;
+          }
+          if (instruction.type === 'concatenateVariables') {
+            const target = `${variables[instruction.a]} ${
+              variables[instruction.b]
+            }`;
+            variables[instruction.name] = target;
+            continue;
           }
         }
 
@@ -376,7 +398,10 @@ export const loadUserData = async (
           sizeExample: variables['size'],
         });
 
+        console.log('^^&', result);
+
         result.material = getMaterialCharacteristic(variables['materials']);
+        console.log('^^&', result);
 
         const values = {
           current_size: result.size,
