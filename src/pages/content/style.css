@@ -244,6 +244,16 @@
 .efitter-chat-response a {
   text-decoration: underline;
 }
+.efitter-chat-response p {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+.efitter-chat-response strong {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: bold;
+}
 .efitter-chat-ask {
   background-color: #712e49;
   margin-right: 45px;
