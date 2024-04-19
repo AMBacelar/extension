@@ -1,8 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 :root {
   --user-avatar-url: url('https://storage.googleapis.com/media.landbot.io/159487/channels/ES9MZRY60PPC1E6W4RJDCHQ47ZPAXQSR.png');
