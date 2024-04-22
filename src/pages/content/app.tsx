@@ -13,11 +13,11 @@ let efitterBot: Bot | undefined;
 const App = () => {
   const [open, setOpen] = useState(false);
   const { data: instructions, error, isLoading } = useQuery<InstructionsResponse>({
-    queryKey: ['getInstructions', window.location.hostname],
+    queryKey: ['getInstructions', window.location.href],
     queryFn: async () => {
       const response = await fetch("https://efitter-serverless.vercel.app/api", {
         method: "POST",
-        body: JSON.stringify({ url: window.location.hostname }),
+        body: JSON.stringify({ url: window.location.href }),
       });
       const { instructions } = await response.json();
       return instructions;
@@ -94,6 +94,17 @@ const App = () => {
       (x: { date: string | number | Date; }) => Math.abs(today.getTime() - new Date(x.date).getTime()) / (1000 * 3600 * 24) / 30 <= 12
     );
     setLoaded(true);
+    // send the request that captures the chatbot opened event.
+    fetch("https://efitter-serverless.vercel.app/api/chatbot-opened", {
+      method: "POST",
+      body: JSON.stringify({
+        url: window.location.href,
+        email: efitter_email,
+        size: current_size,
+        material: material,
+      }),
+    });
+    console.log('$$$ just checking', efitterBot);
     setupEfitterBot(current_size, material, products.length, efitter_email, efitter_avatar);
   }, []);
 
