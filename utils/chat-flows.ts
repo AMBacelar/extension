@@ -177,10 +177,12 @@ export const chatFlowGenerator = ({
               {
                 text: "It's spot on!",
                 next: `${prefix}size3`,
+                payload: 'size-accurate',
               },
               {
                 text: "Hmm I'm not sure...",
                 next: `${prefix}size5`,
+                payload: 'size-not-accurate',
               },
             ],
           },
@@ -425,6 +427,7 @@ export const chatFlowGenerator = ({
               {
                 text: 'Which size is best for me?',
                 next: `${prefix}size0`,
+                payload: 'sizeQuery',
               },
             ]),
       ],
@@ -436,6 +439,7 @@ export const chatFlowGenerator = ({
               {
                 text: 'What is the material like?',
                 next: `${prefix}material`,
+                payload: 'materialQuery',
               },
             ]),
       ],
@@ -447,6 +451,7 @@ export const chatFlowGenerator = ({
               {
                 text: 'What is my style persona?',
                 next: `${prefix}guru0`,
+                payload: 'personaQuery',
               },
             ]),
       ],

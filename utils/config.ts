@@ -258,4 +258,6 @@ export const config = {
       ],
     },
   ],
+
+  analyticsEndpoint: 'https://efitter-serverless.vercel.app/api/chatbot-stuff',
 } as const;

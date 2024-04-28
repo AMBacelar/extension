@@ -7,8 +7,12 @@ import { InstructionsResponse } from "../../../utils/instructions";
 import { forSeconds } from "../../../utils/misc";
 import { checkPage, loadUserData } from "./executeInstructions";
 import detectUrlChange from '../../../utils/detect-url-change';
+import { AnalyticsLogger } from "../../../utils/analytics";
+import { config } from "../../../utils/config";
 
 let efitterBot: Bot | undefined;
+
+const logger = AnalyticsLogger.getInstance(config.analyticsEndpoint);
 
 const App = () => {
   const [open, setOpen] = useState(false);
@@ -23,8 +27,19 @@ const App = () => {
       return instructions;
     }
   });
+  const [email, setEmail] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
   const [urlChanges, setUrlChanges] = useState<number>(0);
+
+  useEffect(() => {
+    if (efitterBot !== undefined) {
+      logger.logEvent("chatbot-state-toggled", {
+        action: open ? "opened" : "closed",
+        url: window.location.href,
+        email,
+      });
+    }
+  }, [open]);
 
   useEffect(() => {
     detectUrlChange.on('change', (newUrl) => {
@@ -45,6 +60,7 @@ const App = () => {
           if (res) {
             loadUserData(instructions.toLoadUserData, instructions.brand)
               .then(res => {
+                setEmail(res.efitter_email);
                 console.log('done, 3', res);
                 handlePageParse(res.current_size, res.material, res.efitter_products, res.efitter_email, res.efitter_avatar);
               })
@@ -66,7 +82,8 @@ const App = () => {
           material,
           products_length,
           user_email,
-          efitter_avatar
+          efitter_avatar,
+          logger
         );
         await forSeconds(1);
         console.log('$$$ just checking', efitterBot);

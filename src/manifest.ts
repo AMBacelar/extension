@@ -7,10 +7,10 @@ const manifest: Manifest.WebExtensionManifest & { oauth2: any; key?: string } =
     name: pkg.displayName,
     version: pkg.version,
     description: pkg.description,
-    key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmTMUCJI3/fk5VMAZWgptJ4tEVlomcuF01hf79fpjDrKyaUjt45Bd0ySgBf+d/m+A+DFLEoX7G1QcN/YkyimpVgkiAVtaci78U53MwrcUKawerEHpGOGnXOQMBZ+oEx3zIAZsviF5/CPPAqh2uEttxv14IO+xVw/7+NKlOLBOv+RgRN3x6Smvzz7jqPTnQEStDbnlgYqCREP/Vj3TtyrKN0+p+WS8fYId9kw7o+GuAOjJOMU6vLWxVjJ3NJrt/d5Ld7j+VGcDZl73TM455JVqsw8E9/4tKSPX0G24we6Ut5vXsucSjPyp26mFnU5BKdxtfDFhquTgr/68o5FhMSmLCwIDAQAB',
+    key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAh7Vquhr3RcFNoELlSkESqaxCWSnCt+OpD/EjSIUiRCnfD9XYUvVQap4giguu0o3/DLy6x/vfyyHEY5s3yRcPYcL48hubmXwJsC7Rrho1nq8wmm1GEBCw+o9jo7i5bi6rIa7DUAwrIvgfwf4mPyR/cZoMydHd+tlEmhmh8weTsljjsSrXLNedg7JJNi1veA5IAg82Ucq+zoZwPKJPAklD1mBtmzggFf/1j7quh93fsPKjOLdga7Y3ZRdc4fx1nPUKk51IB4TPsUV06jMKCs5tZgv+q/PPYn1K5jtoM6tmZWrMC2J74HJ0arSCAWu7D+m08WXcC5pxgCSXTN6Xgy8N6wIDAQAB',
     oauth2: {
       client_id:
-        '479734964735-teujj5sc8aq8rccmvn6nt0as9fdbirfg.apps.googleusercontent.com',
+        '479734964735-t5gmdfnqcfv2uj204rq1qiinpvh7mirg.apps.googleusercontent.com',
       scopes: [
         'openid',
         'email',

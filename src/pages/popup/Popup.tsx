@@ -11,6 +11,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './toast-overrides.css';
 import { useStateWithCallback } from "../../../utils/use-state-with-callback";
+import { AnalyticsLogger } from "../../../utils/analytics";
 
 const screens = ['welcomeScreen', 'permissionsPage', 'signIn', 'firstTimeUser', 'loadingEmails', 'startShopping'] as const;
 type Screen = typeof screens[number];
@@ -28,24 +29,27 @@ type ProfileInfo = {
   verified_email: boolean
 }
 
+const logger = AnalyticsLogger.getInstance(config.analyticsEndpoint);
+
 export default function Popup(): JSX.Element {
   const [screen, setScreen] = useState<Screen>();
   const [name, setName] = useState<string>();
+  const [email, setEmail] = useStateWithCallback<string>('');
   const [, setIsFirstTimeUser] = useState<boolean>(true);
   const [productsFound, setProductsFound] = useStateWithCallback<number>(0);
   const [totalMessages, setTotalMessages] = useState<number>(0);
   const [messagesProcessed, setMessagesProcessed] = useState<number>(0);
   const [onboardingTimeout, setOnboardingTimeout] = useStateWithCallback(setTimeout(() => {/* no-op */ }, 1));
-  const [isOnboardingButtonClicked, setIsOnboardingButtonClicked] = useState<boolean>(false);
+  const [isOnboardingButtonClicked, setIsOnboardingButtonClicked] = useStateWithCallback<boolean>(false);
 
   const calledOnce = useRef(false);
 
-  const listeners = async (request: { context: any; data: { data: SetStateAction<number>; }; payload: any; }, _sender: unknown, sendResponse: (arg0: string | string[] | null) => void) => {
+  const listeners = async (request: { context: any; data: { data: number; }; payload: any; }, _sender: unknown, sendResponse: (arg0: string | string[] | null) => void) => {
     let div;
     let body;
     let itemsIndex;
     let orderIndex;
-    let startIndex;
+    let startIndex = 0;
 
     switch (request.context) {
       case config.keys.productsSaved:
@@ -67,8 +71,8 @@ export default function Popup(): JSX.Element {
         body = request.payload;
         div = document.createElement('div');
         div.innerHTML = body;
-        itemsIndex = div.textContent.lastIndexOf('Items');
-        orderIndex = div.textContent.lastIndexOf('Your order');
+        itemsIndex = (div?.textContent || '').lastIndexOf('Items');
+        orderIndex = (div?.textContent || '').lastIndexOf('Your order');
         if (itemsIndex > -1) {
           startIndex = itemsIndex + 5;
         }
@@ -76,7 +80,7 @@ export default function Popup(): JSX.Element {
           startIndex = orderIndex + 10;
         }
         sendResponse(
-          div.textContent
+          (div?.textContent || '')
             .substring(startIndex, body.lastIndexOf('Total'))
             .split(/[ \t]{2,}/)
         );
@@ -96,6 +100,7 @@ export default function Popup(): JSX.Element {
         if (user) {
           console.log('uouo', user);
           setName(user.given_name);
+          setEmail(user.email);
           storageGet<Product[]>(config.keys.products)
             .then((products) => {
               console.log('products:', products)
@@ -126,10 +131,12 @@ export default function Popup(): JSX.Element {
   useEffect(() => {
     clearTimeout(onboardingTimeout);
     if (screen === 'loadingEmails') {
+      logger.logEvent('fetch-emails-clicked', { email })
       requestBackground(
         new ExtensionMessage(config.keys.loadMessages)
       ).then((): void => {
         setProductsFound(0, (prev) => {
+          logger.logEvent('fetch-emails-success', { email, emailCount: prev });
           toast(`${prev} products found`);
         });
         setMessagesProcessed(0);
@@ -156,6 +163,8 @@ export default function Popup(): JSX.Element {
     ).then(async (profileInfo) => {
       console.log(profileInfo);
       setName(profileInfo.given_name);
+      setEmail(profileInfo.email, (_, next) => logger.logEvent('login', { email: next }));
+      logger.logEvent('login', { email: profileInfo.email });
       await storageSet(config.keys.user, profileInfo);
       await storageSet(
         config.keys.googleUserId,
@@ -185,6 +194,8 @@ export default function Popup(): JSX.Element {
       config.keys.googleUserId,
       null
     );
+    setName('');
+    setEmail('', (prev) => logger.logEvent('logout', { email: prev }));
     requestBackground<ProfileInfo>(
       new ExtensionMessage('logout')
     )
@@ -207,9 +218,24 @@ export default function Popup(): JSX.Element {
 
   const Dots = () => {
     const dots = [
-      { screen: screens[0], onClick: () => { setIsOnboardingButtonClicked(true); setScreen(screens[0]) } },
-      { screen: screens[1], onClick: () => { setIsOnboardingButtonClicked(true); setScreen(screens[1]) } },
-      { screen: screens[2], onClick: () => { setIsOnboardingButtonClicked(true); setScreen(screens[2]) } },
+      {
+        screen: screens[0], onClick: () => {
+          setIsOnboardingButtonClicked(true, () => logger.logEvent('onboarding-dots-clicked', { screen: String(screen) }));
+          setScreen(screens[0]);
+        }
+      },
+      {
+        screen: screens[1], onClick: () => {
+          setIsOnboardingButtonClicked(true, () => logger.logEvent('onboarding-dots-clicked', { screen: String(screen) }));
+          setScreen(screens[1]);
+        }
+      },
+      {
+        screen: screens[2], onClick: () => {
+          setIsOnboardingButtonClicked(true, () => logger.logEvent('onboarding-dots-clicked', { screen: String(screen) }));
+          setScreen(screens[2]);
+        }
+      },
     ];
 
     const Dot = ({ target, onClick }: { target: string; onClick: () => void }) => {

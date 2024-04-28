@@ -1,6 +1,7 @@
 import mustache from 'mustache';
 import { ChatFlow, Node, chatFlowGenerator } from './chat-flows';
 import { LegalSize } from './size';
+import { AnalyticsLogger } from './analytics';
 
 const styleGuruArchetypes = {
   minimalist: {
@@ -99,6 +100,7 @@ const styleGuruArchetypes = {
 export type PersonaKey = keyof typeof styleGuruArchetypes;
 
 export class Bot {
+  logger: AnalyticsLogger;
   size: LegalSize;
   material: string;
   products_length: number;
@@ -124,13 +126,15 @@ export class Bot {
     material: string,
     products_length: number,
     efitter_email: string,
-    efitter_avatar: string
+    efitter_avatar: string,
+    logger: AnalyticsLogger
   ) {
     this.size = size;
     this.material = material;
     this.products_length = products_length;
     this.efitter_email = efitter_email;
     this.efitter_avatar = efitter_avatar;
+    this.logger = logger;
 
     const { chatFlow, chatVariables } = this.generateChat();
     this.chatFlow = chatFlow;
@@ -336,9 +340,56 @@ export class Bot {
 
     this.disableAllChoices();
 
-    if (choice.dataset.payload === 'fetchPersona') {
-      await this.refetchPersona(this.efitter_email);
+    if (choice.dataset.payload) {
+      switch (choice.dataset.payload) {
+        case 'fetchPersona':
+          await this.refetchPersona(this.efitter_email);
+          this.logger.logEvent('refetch-persona', {
+            email: this.efitter_email,
+            persona: this.persona_key,
+          });
+          break;
+        case 'sizeQuery':
+          this.logger.logEvent('size-queried', {
+            email: this.efitter_email,
+            size: String(this.size),
+            url: window.location.href,
+          });
+          break;
+        case 'materialQuery':
+          this.logger.logEvent('material-queried', {
+            email: this.efitter_email,
+            material: this.material,
+            url: window.location.href,
+          });
+          break;
+        case 'personaQuery':
+          this.logger.logEvent('persona-queried', {
+            email: this.efitter_email,
+            persona: this.persona_key,
+            url: window.location.href,
+          });
+          break;
+        case 'size-accurate':
+          this.logger.logEvent('size-accurate', {
+            email: this.efitter_email,
+            size: String(this.size),
+            url: window.location.href,
+          });
+          break;
+        case 'size-not-accurate':
+          this.logger.logEvent('size-not-accurate', {
+            email: this.efitter_email,
+            size: String(this.size),
+            url: window.location.href,
+          });
+          break;
+
+        default:
+          break;
+      }
     }
+
     this.printChoice(choice);
     this.scrollContainer();
     if (choice.dataset.next) {
