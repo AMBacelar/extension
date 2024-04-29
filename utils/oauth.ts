@@ -15,28 +15,21 @@ export const OAUTH = {
       await storageSet(OAUTH.user.info, userInfo);
     },
     logOut: async () => {
-      console.log('1');
+      console.log('someone asked me to log out');
       chrome.identity.getAuthToken(
         { interactive: false },
         async (current_token) => {
-          console.log('2');
           chrome.identity.removeCachedAuthToken(
             { token: current_token as string },
             () => {
               /** */
-              console.log('3');
             }
           );
-
           fetch(
             'https://accounts.google.com/o/oauth2/revoke?token=' + current_token
           );
-          console.log('4');
-
           await chrome.identity.clearAllCachedAuthTokens();
-          console.log('5');
           await storageSet(OAUTH.user.info, '');
-          console.log('6');
         }
       );
     },

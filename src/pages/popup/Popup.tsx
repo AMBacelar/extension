@@ -171,21 +171,18 @@ export default function Popup(): JSX.Element {
         profileInfo.id
       );
       console.log('should have email, given name and ID now');
+      storageGet<Product[]>(config.keys.products)
+        .then((products) => {
+          console.log('products:', products)
+          if (products && products.length > 0) {
+            setIsFirstTimeUser(false);
+            setScreen('startShopping');
+          } else {
+            setScreen('firstTimeUser');
+          }
+        })
     })
       .catch(err => console.log('hmm error', err))
-
-
-    await OAUTH.user.signIn();
-    storageGet<Product[]>(config.keys.products)
-      .then((products) => {
-        console.log('products:', products)
-        if (products && products.length > 0) {
-          setIsFirstTimeUser(false);
-          setScreen('startShopping');
-        } else {
-          setScreen('firstTimeUser');
-        }
-      })
   }
 
   const handleLogout = async () => {
