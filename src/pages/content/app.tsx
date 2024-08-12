@@ -85,9 +85,9 @@ const App = () => {
           efitter_avatar,
           logger
         );
-        await forSeconds(1);
         console.log('$$$ just checking', efitterBot);
         await efitterBot.init();
+        console.log('$$$ we are back?');
         setOpen(true);
       } catch (ex) {
         console.log(ex + '!!!!');

@@ -125,9 +125,11 @@ export const OAUTH = {
                 if (!nextPageToken) {
                   shouldContinue = false;
                 }
-                if (result.messages) {
-                  for (let i = 0; i < result.messages.length; i++) {
-                    emailMessages.push(result.messages[i]);
+                if (result) {
+                  if (result.messages) {
+                    for (let i = 0; i < result.messages.length; i++) {
+                      emailMessages.push(result.messages[i]);
+                    }
                   }
                   resolve();
                 }

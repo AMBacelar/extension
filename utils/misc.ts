@@ -54,7 +54,7 @@ export const elementAppear = (
         clearInterval(id);
         resolve(element);
       }
-    }, 100);
+    }, 200);
   });
 };
 

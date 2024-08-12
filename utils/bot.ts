@@ -2,6 +2,7 @@ import mustache from 'mustache';
 import { ChatFlow, Node, chatFlowGenerator } from './chat-flows';
 import { LegalSize } from './size';
 import { AnalyticsLogger } from './analytics';
+import { elementAppear } from './misc';
 
 const styleGuruArchetypes = {
   minimalist: {
@@ -9,28 +10,32 @@ const styleGuruArchetypes = {
     description:
       'Your style is chic, clean look – simple, functional, and effortlessly stylish! Your closet is filled with those go-to pieces in neutral shades, clean lines, and quality over quantity.',
     gifUrl: 'https://media.giphy.com/media/ML7SzCpXWDJuD9uzw8/giphy.gif',
-    capsuleUrl: 'https://mailchi.mp/dc84ec90e406/xn06nty4jb-9376610',
+    capsuleUrl:
+      'https://mailchi.mp/d2d33f4b9790/soft-launch-your-autumn-wardrobe-10327640',
   },
   'cottagecore-babe': {
     label: 'Cottagecore Babe',
     description:
       'You love earthy tones and adding a touch of vintage magic to your outfits. Picture flowy floral dresses, lace detailing, and cozy knit cardigans rounded up with a pair of lace-up boots.',
     gifUrl: 'https://media.giphy.com/media/tp8ov83pgwIhFnK8td/giphy.gif',
-    capsuleUrl: 'https://mailchi.mp/1565d21dd74c/xn06nty4jb-9376594',
+    capsuleUrl:
+      'https://mailchi.mp/4aef2a6b0307/soft-launch-your-autumn-wardrobe-10327699',
   },
   'cozy-queen': {
     label: 'Cozy Queen',
     description: `Your style is about embracing comfort with a side of chic. Think oversized sweaters, cute joggers, and the comfiest knitwear. You're all about soft textures, earthy tones, and accessorizing with cozy scarves and beanies.`,
     gifUrl:
       'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcmt1MjU3b2MwaDYyYjYybGNocThzYnc1c3lrYjFueHR1cGU0c3cwYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7522ilFbxhihR6RG/giphy.gif',
-    capsuleUrl: 'https://mailchi.mp/c2cc41c6d121/xn06nty4jb-9376578',
+    capsuleUrl:
+      'https://mailchi.mp/477700249d6a/soft-launch-your-autumn-wardrobe-10327700',
   },
   maximalist: {
     label: 'Maximalist',
     description: `Your style is about bold colors, patterns, and accessories that scream "look at me!" You're all about daring combos, layering textures, and rocking those unique pieces that showcase your fierce and fabulous self.`,
     gifUrl:
       'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcThicjNyMWhueGRxbGx5NWgya3IxMGVzZHp4dWw4M2NoaTZseGR0eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/55gDFhGA4Q8QqBHKTZ/giphy.gif',
-    capsuleUrl: 'https://mailchi.mp/02444f40da77/xn06nty4jb-9376562',
+    capsuleUrl:
+      'https://mailchi.mp/d034efdb0021/soft-launch-your-autumn-wardrobe-10327707',
   },
   'free-spirit': {
     label: 'Free Spirit',
@@ -38,7 +43,8 @@ const styleGuruArchetypes = {
       'Your style is an effortless blend of comfort and individuality, with flowy silhouettes, earthy tones, and pieces that move with you through the changing seasons.',
     gifUrl:
       'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYmtpaWRuaXYzd3hxazJ1eWZ5c2hnanl6dDd4dGRic3ZwbzAwdmIycCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l1VUuoQB6wkX4cQSW5/giphy.gif',
-    capsuleUrl: 'https://mailchi.mp/4bd9bb778041/xn06nty4jb-9376554',
+    capsuleUrl:
+      'https://us14.campaign-archive.com/?u=63faf2a65848bbdf1d7184b60&id=db0c6d03a5',
   },
   'power-dresser': {
     label: 'Power Dresser',
@@ -46,7 +52,8 @@ const styleGuruArchetypes = {
       'You know how to make an entrance and command attention like no other. Your wardrobe is a collection of power suits, statement blazers, sharp tailoring, and sleek designs that turn heads wherever you go.',
     gifUrl:
       'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGVkaXRyMGUyOWdjazdwbHk4Z2pmZHdzNmp2dWtnenFjYzRuOGlycCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o84TZ1VfE2i4IIMRa/giphy.gif',
-    capsuleUrl: 'https://mailchi.mp/21abd567cb6d/xn06nty4jb-9376370',
+    capsuleUrl:
+      'https://mailchi.mp/32fd58b69930/soft-launch-your-autumn-wardrobe-10327739',
   },
   barbie: {
     label: 'Barbie',
@@ -54,7 +61,8 @@ const styleGuruArchetypes = {
       'Your style is all about embracing playful and girly, body-hugging dresses, high heels, and glitzy accessories! Your wardrobe is a candy-coloured dream with pastel hues and accessories that shine like glitter.',
     gifUrl:
       'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXBrc3QzanRmN2RyYWE2OWxxMzRkYWJiNGcyNTZid29obTR1d3B0cyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/XcKzC0OeFHiy3PW8XT/giphy.gif',
-    capsuleUrl: 'https://mailchi.mp/be348e9535f6/xn06nty4jb-9376546',
+    capsuleUrl:
+      'https://mailchi.mp/d6c622d75fe7/soft-launch-your-autumn-wardrobe-10327753',
   },
   'functional-dresser': {
     label: 'Functional Dresser',
@@ -62,7 +70,8 @@ const styleGuruArchetypes = {
       "You're the ultimate queen of practical and versatile style! Think comfy basics, versatile layers, and pockets galore. From trainers to multi-functional accessories, you nail the effortlessly cool, on-the-go vibe.",
     gifUrl:
       'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYXFmdXJ5NHk0Z2RnbTRhaXRqMnp3ZTJhajl2bXkxaDNlM2xyNjMzOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/33hRP8pCsJf7UPJftI/giphy.gif',
-    capsuleUrl: 'https://mailchi.mp/3918092fadf7/xn06nty4jb-9376358',
+    capsuleUrl:
+      'https://mailchi.mp/19478d22d7fa/soft-launch-your-autumn-wardrobe-10327832',
   },
   'retro-tomboy': {
     label: 'Retro Tomboy',
@@ -70,7 +79,8 @@ const styleGuruArchetypes = {
       "From graphic tees to denim jackets, you've got that perfect blend of retro and tomboyish flair. You create your own style, combining masculine and feminine elements to perfection!",
     gifUrl:
       'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYjlmY2h5cWd0dnJrcDhnbHFkc3NrOHAxNjkzbmMzZTlhZ2YxbWhlMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/gKm6Vcd003AqOLTJQq/giphy.gif',
-    capsuleUrl: 'https://mailchi.mp/20ececfa993d/xn06nty4jb',
+    capsuleUrl:
+      'https://mailchi.mp/c8fe69af6897/soft-launch-your-autumn-wardrobe-10327758',
   },
   baddie: {
     label: 'Baddie',
@@ -78,7 +88,8 @@ const styleGuruArchetypes = {
       'Your style is fierce and confident, channelling streetwear queen Rihanna. Your wardrobe is a treasure chest of figure-hugging outfits and bold prints that demand attention.',
     gifUrl:
       'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeW1lNTFjMnBvOG13eXY3ZGZxZHJsMDE2dnhudTRzcDJucjVpOG1pZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5MSpg1lKBwqZEPDKOK/giphy.gif',
-    capsuleUrl: 'https://mailchi.mp/b345ec61a658/xn06nty4jb-9376410',
+    capsuleUrl:
+      'https://mailchi.mp/7b75efd46fbd/soft-launch-your-autumn-wardrobe-10327762',
   },
   classique: {
     label: 'Classique',
@@ -87,14 +98,15 @@ const styleGuruArchetypes = {
     gifUrl:
       'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNmoxeGFqMGluNzExYXJmejB1c2o0cWxxbGtnenc0a2s0OWZ0N2RwaiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT4uQCgCnJ4rUX2IRq/giphy.gif',
     capsuleUrl:
-      'https://mailchi.mp/e1bbe987fb58/soft-launch-your-autumn-wardrobe',
+      'https://mailchi.mp/fbf3e4e65665/soft-launch-your-autumn-wardrobe-10289334',
   },
   'country-club-chic': {
     label: 'Country Club Chic',
     description: `You're all about timeless elegance with a touch of Blair Waldorf vibes from "Gossip Girl." Your wardrobe is a dreamy pastel heaven with timeless prints, filled with tailored blazers, polo shirts, and sleek skirts.`,
     gifUrl:
       'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmV0MmRrcnI1YW84N280cjhjeTJyb3NicTRtdjF0OGtwb3gxamFvdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mD44ZStfDEDngsTL6g/giphy.gif',
-    capsuleUrl: 'https://mailchi.mp/3c343b0090f3/xn06nty4jb-9376382',
+    capsuleUrl:
+      'https://mailchi.mp/47e4e6c15acb/soft-launch-your-autumn-wardrobe-10327768',
   },
 } as const;
 export type PersonaKey = keyof typeof styleGuruArchetypes;
@@ -229,10 +241,8 @@ export class Bot {
         response.innerHTML = step.text;
       }
     }
-    await this.sleep(1000);
-    this.showLoading();
-    await this.sleep(1000);
-    this.hideLoading();
+
+    await this.sleep(500);
     this.insertNewChatItem(response);
 
     if (step.options) {
@@ -393,6 +403,9 @@ export class Bot {
     this.printChoice(choice);
     this.scrollContainer();
     if (choice.dataset.next) {
+      this.showLoading();
+      await this.sleep(1000);
+      this.hideLoading();
       let nextIndex = choice.dataset.next;
       if (this.persona_key) {
         nextIndex = nextIndex.replace('MG', 'NG');
@@ -419,9 +432,10 @@ export class Bot {
   }
 
   async init() {
-    this.efitterChat = document.getElementById('efitter-chat');
-    this.container = document.getElementById('efitter-chat-container');
-    this.inner = document.getElementById('efitter-chat-inner');
+    console.log('initializing efitterChat...');
+    this.container = await elementAppear('#efitter-chat-container');
+    this.inner = await elementAppear('#efitter-chat-inner');
+    this.efitterChat = await elementAppear('#efitter-chat');
     this.container.addEventListener('click', this.handleChoice.bind(this));
 
     document.documentElement.style.setProperty(

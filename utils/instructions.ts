@@ -17,6 +17,7 @@ export const InstructionType = {
   runTextReplaceOnVariable: 'runTextReplaceOnVariable',
   concatenateVariables: 'concatenateVariables',
   surrenderToNext: 'surrenderToNext',
+  urlIncludes: 'urlIncludes',
 } as const;
 
 export type InstructionCore = {
@@ -26,6 +27,11 @@ export type InstructionCore = {
 type WaitForSeconds = InstructionCore & {
   value: number;
   type: 'waitForSeconds';
+};
+
+type UrlIncludes = InstructionCore & {
+  searchString: string;
+  type: 'urlIncludes';
 };
 
 type GetElementTextContent = InstructionCore & {
@@ -122,6 +128,7 @@ type ConcatenateVariables = InstructionCore & {
 
 export type Instruction =
   | WaitForSeconds
+  | UrlIncludes
   | GetElementTextContent
   | GetElementTextContentShadowRoot
   | GetElementTextContentComplex

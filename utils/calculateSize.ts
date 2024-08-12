@@ -12,6 +12,7 @@ export type Product = {
 
 export const getCategoryFallback = async (category: Category) => {
   const allProducts = (await storageGet(config.keys.products)) as Product[];
+  console.log(category, 'allProducts', allProducts.length);
   let products: Product[] = [];
   const categoryFallbackOrder = {
     'One-pieces': {

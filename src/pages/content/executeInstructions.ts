@@ -58,6 +58,15 @@ export const checkPage = async (instructions: Instruction[]) => {
       await forSeconds(instruction.value);
       continue;
     }
+    if (instruction.type === InstructionType.urlIncludes) {
+      const url = window.location.href;
+      if (url.toLowerCase().includes(instruction.searchString.toLowerCase())) {
+        variables['url-check'] = true;
+      } else {
+        variables['url-check'] = false;
+      }
+      continue;
+    }
     if (instruction.type === InstructionType.getSpecificNodeByIndex) {
       const elementList = document.querySelectorAll(instruction.selector);
       if (elementList.length > instruction.i) {
@@ -144,7 +153,7 @@ export const checkPage = async (instructions: Instruction[]) => {
       }
     }
   }
-  console.log('check page is now done');
+  console.log('check page is now done', variables);
 
   return true;
 };
@@ -186,14 +195,19 @@ export const loadUserData = async (
           if (instruction.type === 'getElementTextContent') {
             const element = await elementAppear(instruction.selector);
             if (typeof element != 'undefined' && element != null) {
-              variables[instruction.name] = element.textContent.trim();
+              variables[instruction.name] = (element.textContent || '').trim();
               if (instruction.name === 'product-title') {
-                const category = getCategory(element.textContent);
+                const category = getCategory(element.textContent || '');
                 if (category) {
                   variables['category'] = category;
                 }
               }
+              console.log('getElementTextContent', variables);
             } else {
+              console.log(
+                'attempt to fetch element failed',
+                instruction.selector
+              );
               variables[instruction.name] = false;
             }
             continue;
@@ -261,8 +275,9 @@ export const loadUserData = async (
             continue;
           }
           if (instruction.type === 'clickOnElement') {
-            const element = document.querySelector(instruction.selector);
-            if (typeof element != 'undefined' && element != null) {
+            const element = await elementAppear(instruction.selector);
+            console.log('clicking on element', element);
+            if (typeof element !== 'undefined' && element !== null) {
               element.click();
               await forSeconds(instruction.waitFor);
             } else {
@@ -390,6 +405,8 @@ export const loadUserData = async (
             continue;
           }
         }
+
+        console.log('variables', variables);
 
         const result = await calculateSize({
           name: variables['product-title'],

@@ -13,7 +13,7 @@ console.log('background script loaded');
 const manifestData = chrome.runtime.getManifest();
 storageGet(config.keys.lastSavedVersion).then((lastSavedVersion) => {
   if (lastSavedVersion !== manifestData.version) {
-    const newURL = 'https://www.efitter.com/whats-new';
+    const newURL = 'https://www.efitter.com/post-download';
     chrome.tabs.create({ url: newURL });
     storageSet(config.keys.lastSavedVersion, manifestData.version);
   }
