@@ -54,6 +54,7 @@ export const checkPage = async (instructions: Instruction[]) => {
 
   for (let index = 0; index < instructions.length; index++) {
     const instruction = instructions[index];
+    // DEBUG console.log('instruction', instruction, variables);
     if (instruction.type === InstructionType.waitForSeconds) {
       await forSeconds(instruction.value);
       continue;
@@ -188,6 +189,7 @@ export const loadUserData = async (
 
         for (let index = 0; index < instructions.length; index++) {
           const instruction = instructions[index];
+          // DEBUG console.log('instruction', instruction, variables);
           if (instruction.type === 'waitForSeconds') {
             await forSeconds(instruction.value);
             continue;

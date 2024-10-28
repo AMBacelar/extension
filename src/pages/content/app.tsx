@@ -4,7 +4,6 @@ import { useQuery, QueryClientProvider, QueryClient } from "@tanstack/react-quer
 import { Bot } from "../../../utils/bot";
 import { LegalSize } from "../../../utils/size";
 import { InstructionsResponse } from "../../../utils/instructions";
-import { forSeconds } from "../../../utils/misc";
 import { checkPage, loadUserData } from "./executeInstructions";
 import detectUrlChange from '../../../utils/detect-url-change';
 import { AnalyticsLogger } from "../../../utils/analytics";

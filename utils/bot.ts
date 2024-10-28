@@ -259,6 +259,7 @@ export class Bot {
         button.dataset.next = option.next;
         button.dataset.payload = option.payload;
         choices.appendChild(button);
+        button.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     } else if (step.next) {
       this.printResponse(this.chatFlow[step.next]);
